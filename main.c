@@ -211,6 +211,7 @@ int main(int argc, char **argv) {
 
     if (argc == 1) {
         DIR *directory;
+        struct dirent *directory_entry;
         magic_t magic_cookie;
         int32 magic_load_result;
 
@@ -230,24 +231,16 @@ int main(int argc, char **argv) {
             fatal(EXIT_FAILURE);
         }
         
-        while (1) {
-            struct dirent *directory_entry = readdir(directory);
-            if (directory_entry == NULL) {
-                break;
-            }
-            
+        while ((directory_entry = readdir(directory))) {
             char *filename = directory_entry->d_name;
             int32 filename_length = strlen32(filename);
-            int32 is_image_file = 0;
-            char *mime_type = (char *)magic_file(magic_cookie, filename);
+            const char *mime_type;
             
-            if (mime_type != NULL) {
-                if (BEGINS_WITH(mime_type, "image/")) {
-                    is_image_file = 1;
-                }
+            if ((mime_type = magic_file(magic_cookie, filename)) == NULL) {
+                continue;
             }
-            
-            if (is_image_file == 1) {
+
+            if (BEGINS_WITH((char *)mime_type, "image/")) {
                 file_list = realloc2(file_list, file_count, file_count + 1, SIZEOF(char *));
                 file_list[file_count] = malloc2(filename_length + 1);
                 strcpy(file_list[file_count], filename);
