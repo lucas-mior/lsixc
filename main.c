@@ -13,6 +13,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <sys/time.h>
+#include <errno.h>
 
 #include "util.c"
 
@@ -80,22 +81,28 @@ int main(int argc, char **argv) {
     signal(SIGHUP, cleanup);
     signal(SIGABRT, cleanup);
 
-    pid_t check_pid = fork();
-    if (check_pid == 0) {
+    pid_t check_pid;
+    switch (check_pid = fork()) {
+    case -1:
+        error("Error forking: %s\n", strerror(errno));
+        fatal(EXIT_FAILURE);
+    case 0: {
         int32 dev_null_descriptor = open("/dev/null", O_WRONLY);
         xdup2(dev_null_descriptor, STDOUT_FILENO);
         xdup2(dev_null_descriptor, STDERR_FILENO);
         XCLOSE(&dev_null_descriptor);
         execlp("sh", "sh", "-c", "command -v magick", (char *)NULL);
-        exit(1);
-    } else {
-        if (check_pid > 0) {
-            int32 check_status = 0;
-            waitpid(check_pid, &check_status, 0);
-            if (WIFEXITED(check_status)) {
-                system_status = WEXITSTATUS(check_status);
-            }
+        error("Error executing sh: %s\n", strerror(errno));
+        fatal(EXIT_FAILURE);
+    }
+    default: {
+        int32 check_status = 0;
+        waitpid(check_pid, &check_status, 0);
+        if (WIFEXITED(check_status)) {
+            system_status = WEXITSTATUS(check_status);
         }
+        break;
+    }
     }
 
     if (system_status != 0) {
@@ -286,15 +293,19 @@ int main(int argc, char **argv) {
             int32 is_directory = S_ISDIR(path_status.st_mode);
             if (is_directory) {
                 printf("Recursing on %s\n", argv[i]);
-                pid_t recurse_pid = fork();
-                if (recurse_pid == 0) {
+                pid_t recurse_pid;
+                switch (recurse_pid = fork()) {
+                case -1:
+                    error("Error forking: %s\n", strerror(errno));
+                    fatal(EXIT_FAILURE);
+                case 0:
                     chdir(argv[i]);
                     execlp(argv[0], argv[0], (char *)NULL);
-                    exit(1);
-                } else {
-                    if (recurse_pid > 0) {
-                        waitpid(recurse_pid, NULL, 0);
-                    }
+                    error("Error executing %s: %s\n", argv[0], strerror(errno));
+                    fatal(EXIT_FAILURE);
+                default:
+                    waitpid(recurse_pid, NULL, 0);
+                    break;
                 }
             } else {
                 file_list = realloc(file_list, (file_count + 1) * sizeof(char *));
@@ -440,32 +451,47 @@ int main(int argc, char **argv) {
         int32 pipe_descriptors[2];
         pipe(pipe_descriptors);
         
-        pid_t montage_pid = fork();
-        if (montage_pid == 0) {
+        pid_t montage_pid;
+        switch (montage_pid = fork()) {
+        case -1:
+            error("Error forking: %s\n", strerror(errno));
+            fatal(EXIT_FAILURE);
+        case 0: {
+            int32 error_file_descriptor;
+            
             XCLOSE(&pipe_descriptors[0]);
             dup2(pipe_descriptors[1], STDOUT_FILENO);
             XCLOSE(&pipe_descriptors[1]);
             
-            int32 error_file_descriptor = open(temporary_error_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+            error_file_descriptor = open(temporary_error_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
             if (error_file_descriptor != -1) {
                 dup2(error_file_descriptor, STDERR_FILENO);
                 XCLOSE(&error_file_descriptor);
             }
             
             execvp("magick", montage_argv);
-            exit(1);
+            error("Error executing magick: %s\n", strerror(errno));
+            fatal(EXIT_FAILURE);
+        }
+        default:
+            break;
         }
         
-        pid_t sixel_pid = fork();
-        if (sixel_pid == 0) {
+        pid_t sixel_pid;
+        switch (sixel_pid = fork()) {
+        case -1:
+            error("Error forking: %s\n", strerror(errno));
+            fatal(EXIT_FAILURE);
+        case 0: {
+            char num_colors_str[32];
+            char *sixel_argv[6];
+            
             XCLOSE(&pipe_descriptors[1]);
             dup2(pipe_descriptors[0], STDIN_FILENO);
             XCLOSE(&pipe_descriptors[0]);
             
-            char num_colors_str[32];
             sprintf(num_colors_str, "%d", num_colors);
             
-            char *sixel_argv[6];
             sixel_argv[0] = "magick";
             sixel_argv[1] = "-";
             sixel_argv[2] = "-colors";
@@ -474,7 +500,11 @@ int main(int argc, char **argv) {
             sixel_argv[5] = NULL;
             
             execvp("magick", sixel_argv);
-            exit(1);
+            error("Error executing magick: %s\n", strerror(errno));
+            fatal(EXIT_FAILURE);
+        }
+        default:
+            break;
         }
         
         XCLOSE(&pipe_descriptors[0]);
@@ -491,14 +521,18 @@ int main(int argc, char **argv) {
         free(allocated_urls);
     }
     
-    pid_t cat_pid = fork();
-    if (cat_pid == 0) {
+    pid_t cat_pid;
+    switch (cat_pid = fork()) {
+    case -1:
+        error("Error forking: %s\n", strerror(errno));
+        fatal(EXIT_FAILURE);
+    case 0:
         execlp("cat", "cat", temporary_error_file, (char *)NULL);
-        exit(1);
-    } else {
-        if (cat_pid > 0) {
-            waitpid(cat_pid, NULL, 0);
-        }
+        error("Error executing cat: %s\n", strerror(errno));
+        fatal(EXIT_FAILURE);
+    default:
+        waitpid(cat_pid, NULL, 0);
+        break;
     }
 
     read_terminal_response("\033[c", 'c', 60.0, terminal_reply, sizeof(terminal_reply));
