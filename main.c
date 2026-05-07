@@ -242,8 +242,7 @@ int main(int argc, char **argv) {
             char *mime_type = (char *)magic_file(magic_cookie, filename);
             
             if (mime_type != NULL) {
-                int32 compare_result = strncmp(mime_type, "image/", 6);
-                if (compare_result == 0) {
+                if (BEGINS_WITH(mime_type, "image/")) {
                     is_image_file = 1;
                 }
             }
