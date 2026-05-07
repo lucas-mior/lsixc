@@ -262,6 +262,9 @@ int main(int argc, char **argv) {
     } else {
         for (int32 i = 1; i < argc; i += 1) {
             struct stat path_status;
+            char *path = argv[i];
+            int32 path_len = strlen32(path);
+
             if (stat(argv[i], &path_status) < 0) {
                 error("Error in stat(%s): %s.\n", argv[i], strerror(errno));
                 fatal(EXIT_FAILURE);
@@ -269,14 +272,13 @@ int main(int argc, char **argv) {
             
             if (S_ISDIR(path_status.st_mode)) {
                 continue;
-            } else {
-                int32 arg_len = strlen32(argv[i]);
-                image_list = realloc2(image_list, image_list_len, image_list_len + 1, SIZEOF(*image_list));
-                image_list[image_list_len].name = malloc2(arg_len + 1);
-                strcpy(image_list[image_list_len].name, argv[i]);
-                image_list[image_list_len].len = arg_len;
-                image_list_len += 1;
             }
+
+            image_list = realloc2(image_list, image_list_len, image_list_len + 1, SIZEOF(*image_list));
+            image_list[image_list_len].name = malloc2(path_len + 1);
+            strcpy(image_list[image_list_len].name, path);
+            image_list[image_list_len].len = path_len;
+            image_list_len += 1;
         }
     }
 
