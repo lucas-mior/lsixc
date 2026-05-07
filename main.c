@@ -6,6 +6,9 @@
 #include <termios.h>
 #include <sys/select.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <fcntl.h>
 #include <dirent.h>
 #include <ctype.h>
 #include <time.h>
@@ -68,7 +71,25 @@ int main(int argc, char **argv) {
     signal(SIGHUP, cleanup);
     signal(SIGABRT, cleanup);
 
-    int32 system_status = system("command -v magick > /dev/null 2>&1");
+    int32 system_status = -1;
+    pid_t check_pid = fork();
+    if (check_pid == 0) {
+        int32 dev_null_descriptor = open("/dev/null", O_WRONLY);
+        dup2(dev_null_descriptor, STDOUT_FILENO);
+        dup2(dev_null_descriptor, STDERR_FILENO);
+        close(dev_null_descriptor);
+        execlp("sh", "sh", "-c", "command -v magick", (char *)NULL);
+        exit(1);
+    } else {
+        if (check_pid > 0) {
+            int32 check_status = 0;
+            waitpid(check_pid, &check_status, 0);
+            if (WIFEXITED(check_status)) {
+                system_status = WEXITSTATUS(check_status);
+            }
+        }
+    }
+
     if (system_status != 0) {
         fprintf(stderr, "Please install ImageMagick\n");
         return 1;
@@ -257,9 +278,16 @@ int main(int argc, char **argv) {
             int32 is_directory = S_ISDIR(path_status.st_mode);
             if (is_directory) {
                 printf("Recursing on %s\n", argv[i]);
-                char recursion_command[1024];
-                sprintf(recursion_command, "cd \"%s\" && %s", argv[i], argv[0]);
-                system(recursion_command);
+                pid_t recurse_pid = fork();
+                if (recurse_pid == 0) {
+                    chdir(argv[i]);
+                    execlp(argv[0], argv[0], (char *)NULL);
+                    exit(1);
+                } else {
+                    if (recurse_pid > 0) {
+                        waitpid(recurse_pid, NULL, 0);
+                    }
+                }
             } else {
                 file_list = realloc(file_list, (file_count + 1) * sizeof(char *));
                 file_list[file_count] = strdup(argv[i]);
@@ -272,44 +300,84 @@ int main(int argc, char **argv) {
         cleanup(0);
     }
 
-    char image_magick_options[1024];
-    sprintf(image_magick_options, "-tile %dx1 -geometry %dx%d>+%d+%d -background %s -fill %s -auto-orient ", 
-            num_tiles, tile_width, tile_height, tile_x_space, tile_y_space, background, foreground);
+    char *montage_argv[10000];
+    int32 montage_argc = 0;
+    
+    montage_argv[montage_argc] = "magick";
+    montage_argc += 1;
+    montage_argv[montage_argc] = "montage";
+    montage_argc += 1;
+    
+    char tile_arg[64];
+    sprintf(tile_arg, "%dx1", num_tiles);
+    montage_argv[montage_argc] = "-tile";
+    montage_argc += 1;
+    montage_argv[montage_argc] = tile_arg;
+    montage_argc += 1;
+    
+    char geometry_arg[128];
+    sprintf(geometry_arg, "%dx%d>+%d+%d", tile_width, tile_height, tile_x_space, tile_y_space);
+    montage_argv[montage_argc] = "-geometry";
+    montage_argc += 1;
+    montage_argv[montage_argc] = geometry_arg;
+    montage_argc += 1;
+    
+    montage_argv[montage_argc] = "-background";
+    montage_argc += 1;
+    montage_argv[montage_argc] = background;
+    montage_argc += 1;
+    
+    montage_argv[montage_argc] = "-fill";
+    montage_argc += 1;
+    montage_argv[montage_argc] = foreground;
+    montage_argc += 1;
+    
+    montage_argv[montage_argc] = "-auto-orient";
+    montage_argc += 1;
     
     if (num_colors > 16) {
-        strcat(image_magick_options, "-shadow ");
+        montage_argv[montage_argc] = "-shadow";
+        montage_argc += 1;
     }
     
     int32 family_length = strlen(font_family);
     if (family_length > 0) {
-        strcat(image_magick_options, "-font ");
-        strcat(image_magick_options, font_family);
-        strcat(image_magick_options, " ");
+        montage_argv[montage_argc] = "-font";
+        montage_argc += 1;
+        montage_argv[montage_argc] = font_family;
+        montage_argc += 1;
     }
     
+    char font_size_string[64];
     if (font_size > 0) {
-        char font_size_string[64];
-        sprintf(font_size_string, "-pointsize %d ", font_size);
-        strcat(image_magick_options, font_size_string);
+        sprintf(font_size_string, "%d", font_size);
+        montage_argv[montage_argc] = "-pointsize";
+        montage_argc += 1;
+        montage_argv[montage_argc] = font_size_string;
+        montage_argc += 1;
     }
 
+    int32 base_argc = montage_argc;
     int32 current_file_index = 0;
     
     while (current_file_index < file_count) {
-        char montage_command[65536];
-        strcpy(montage_command, "magick montage ");
+        montage_argc = base_argc;
         
         int32 goal = file_count - num_tiles;
         if (goal < 0) {
             goal = 0;
         }
         
+        char **allocated_labels = malloc(sizeof(char *) * file_count);
+        char **allocated_urls = malloc(sizeof(char *) * file_count);
+        int32 alloc_count = 0;
+        
         int32 remaining_files = file_count - current_file_index;
         while (current_file_index < file_count && remaining_files > goal) {
             char *current_file_name = file_list[current_file_index];
             
-            char processed_label[1024];
-            strcpy(processed_label, current_file_name);
+            char *processed_label = strdup(current_file_name);
+            allocated_labels[alloc_count] = processed_label;
             
             char *label_pointer = processed_label;
             if (label_pointer[0] == ':') {
@@ -324,10 +392,13 @@ int main(int argc, char **argv) {
                 }
             }
             
-            char file_url[1024];
-            strcpy(file_url, current_file_name);
-            int32 name_length = strlen(current_file_name);
+            char *file_url = malloc(1024);
+            allocated_urls[alloc_count] = file_url;
             
+            strcpy(file_url, "file://");
+            strcat(file_url, current_file_name);
+            
+            int32 name_length = strlen(current_file_name);
             if (name_length > 4) {
                 char *extension_gif = &current_file_name[name_length - 4];
                 if (strcasecmp(extension_gif, ".gif") == 0) {
@@ -342,26 +413,85 @@ int main(int argc, char **argv) {
                 }
             }
             
-            strcat(montage_command, "-label \"");
-            strcat(montage_command, label_pointer);
-            strcat(montage_command, "\" \"file://");
-            strcat(montage_command, file_url);
-            strcat(montage_command, "\" ");
+            montage_argv[montage_argc] = "-label";
+            montage_argc += 1;
+            montage_argv[montage_argc] = label_pointer;
+            montage_argc += 1;
+            montage_argv[montage_argc] = file_url;
+            montage_argc += 1;
             
+            alloc_count += 1;
             current_file_index += 1;
             remaining_files = file_count - current_file_index;
         }
         
-        char full_system_command[65536];
-        sprintf(full_system_command, "%s %s gif:- 2>> %s | magick - -colors %d sixel:-", 
-                montage_command, image_magick_options, temporary_error_file, num_colors);
+        montage_argv[montage_argc] = "gif:-";
+        montage_argc += 1;
+        montage_argv[montage_argc] = NULL;
         
-        system(full_system_command);
+        int32 pipe_descriptors[2];
+        pipe(pipe_descriptors);
+        
+        pid_t montage_pid = fork();
+        if (montage_pid == 0) {
+            close(pipe_descriptors[0]);
+            dup2(pipe_descriptors[1], STDOUT_FILENO);
+            close(pipe_descriptors[1]);
+            
+            int32 error_file_descriptor = open(temporary_error_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+            if (error_file_descriptor != -1) {
+                dup2(error_file_descriptor, STDERR_FILENO);
+                close(error_file_descriptor);
+            }
+            
+            execvp("magick", montage_argv);
+            exit(1);
+        }
+        
+        pid_t sixel_pid = fork();
+        if (sixel_pid == 0) {
+            close(pipe_descriptors[1]);
+            dup2(pipe_descriptors[0], STDIN_FILENO);
+            close(pipe_descriptors[0]);
+            
+            char num_colors_str[32];
+            sprintf(num_colors_str, "%d", num_colors);
+            
+            char *sixel_argv[6];
+            sixel_argv[0] = "magick";
+            sixel_argv[1] = "-";
+            sixel_argv[2] = "-colors";
+            sixel_argv[3] = num_colors_str;
+            sixel_argv[4] = "sixel:-";
+            sixel_argv[5] = NULL;
+            
+            execvp("magick", sixel_argv);
+            exit(1);
+        }
+        
+        close(pipe_descriptors[0]);
+        close(pipe_descriptors[1]);
+        
+        waitpid(montage_pid, NULL, 0);
+        waitpid(sixel_pid, NULL, 0);
+        
+        for (int32 i = 0; i < alloc_count; i += 1) {
+            free(allocated_labels[i]);
+            free(allocated_urls[i]);
+        }
+        free(allocated_labels);
+        free(allocated_urls);
     }
     
-    char concatenate_error_command[512];
-    sprintf(concatenate_error_command, "cat %s", temporary_error_file);
-    system(concatenate_error_command);
+    pid_t cat_pid = fork();
+    if (cat_pid == 0) {
+        execlp("cat", "cat", temporary_error_file, (char *)NULL);
+        exit(1);
+    } else {
+        if (cat_pid > 0) {
+            waitpid(cat_pid, NULL, 0);
+        }
+    }
 
     read_terminal_response("\033[c", 'c', 60.0, terminal_reply, sizeof(terminal_reply));
 
