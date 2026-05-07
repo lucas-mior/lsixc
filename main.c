@@ -21,6 +21,7 @@
 #include "memory.c"
 
 static struct termios original_term_attrs;
+#define MAX_TERM_RESPONSE_LEN 256
 
 static void __attribute((noreturn))
 cleanup(int signal_number) {
@@ -31,8 +32,7 @@ cleanup(int signal_number) {
 }
 
 static int32
-read_term_response(char *sequence, char end_character,
-                       char *output_buffer, int32 maximum_length) {
+read_term_response(char *sequence, char end_character, char *output_buffer) {
     static double timeout_seconds = 0.01;
     struct timeval timeout;
     fd_set read_file_descriptors;
@@ -66,7 +66,7 @@ read_term_response(char *sequence, char end_character,
             break;
         }
         
-        if (index < maximum_length - 1) {
+        if (index < MAX_TERM_RESPONSE_LEN - 1) {
             output_buffer[index] = current_char;
             index += 1;
         }
@@ -89,6 +89,8 @@ compare_strings(const void *a, const void *b) {
 }
 
 int main(int argc, char **argv) {
+    char term_reply[MAX_TERM_RESPONSE_LEN];
+
     signal(SIGINT, cleanup);
     signal(SIGHUP, cleanup);
     signal(SIGABRT, cleanup);
@@ -115,8 +117,7 @@ int main(int argc, char **argv) {
     raw_term_attrs.c_lflag &= ~(ECHO | ICANON);
     tcsetattr(STDIN_FILENO, TCSANOW, &raw_term_attrs);
 
-    char term_reply[256];
-    read_term_response("\033[c", 'c', term_reply, SIZEOF(term_reply));
+    read_term_response("\033[c", 'c', term_reply);
     
     bool has_sixel = false;
     char *force_sixel = getenv("LSIX_FORCE_SIXEL_SUPPORT");
@@ -140,7 +141,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    read_term_response("\033[?1;1;0S", 'S', term_reply, SIZEOF(term_reply));
+    read_term_response("\033[?1;1;0S", 'S', term_reply);
     
     int32 parsed_colors = 0;
     int32 scan_result = sscanf(term_reply, "\033[?1;0;%dS", &parsed_colors);
@@ -163,16 +164,16 @@ int main(int argc, char **argv) {
     }
 
     if (num_colors < 256) {
-        read_term_response("\033[?1;3;256S", 'S', term_reply, SIZEOF(term_reply));
+        read_term_response("\033[?1;3;256S", 'S', term_reply);
         scan_result = sscanf(term_reply, "\033[?1;0;%dS", &parsed_colors);
         if (scan_result == 1) {
             num_colors = parsed_colors;
         }
     }
 
-    read_term_response("\033]11;?\033\\", '\\', term_reply, SIZEOF(term_reply));
+    read_term_response("\033]11;?\033\\", '\\', term_reply);
     
-    read_term_response("\033[?2;1;0S", 'S', term_reply, SIZEOF(term_reply));
+    read_term_response("\033[?2;1;0S", 'S', term_reply);
     
     int32 parsed_width = 0;
     scan_result = sscanf(term_reply, "\033[?2;1;%dS", &parsed_width);
@@ -181,7 +182,7 @@ int main(int argc, char **argv) {
             screen_width = parsed_width;
         }
     } else {
-        read_term_response("\033[14t", 't', term_reply, SIZEOF(term_reply));
+        read_term_response("\033[14t", 't', term_reply);
         scan_result = sscanf(term_reply, "\033[4;%d;%dt", &parsed_colors, &parsed_width);
         if (scan_result == 2) {
             if (parsed_width > 0) {
@@ -477,7 +478,7 @@ int main(int argc, char **argv) {
         break;
     }
 
-    read_term_response("\033[c", 'c', term_reply, SIZEOF(term_reply));
+    read_term_response("\033[c", 'c', term_reply);
 
     cleanup(0);
     memory_check();
