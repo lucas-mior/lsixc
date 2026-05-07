@@ -89,20 +89,15 @@ compare_strings(const void *a, const void *b) {
 }
 
 int main(int argc, char **argv) {
+    struct termios raw_term_attrs;
     char term_reply[MAX_TERM_RESPONSE_LEN];
     char *TERM;
-
-    signal(SIGINT, cleanup);
-    signal(SIGHUP, cleanup);
-    signal(SIGABRT, cleanup);
-
+    bool has_sixel = false;
+    char *force_sixel = getenv("LSIX_FORCE_SIXEL_SUPPORT");
     int32 num_colors = 16;
     char background[64];
-    strcpy(background, "white");
-    
     char foreground[64];
-    strcpy(foreground, "black");
-    
+
     int32 screen_width = 800;
     int32 tile_size = 120;
     int32 tile_width = tile_size;
@@ -111,17 +106,21 @@ int main(int argc, char **argv) {
     
     char *font_family = "Dejavu-Sans";
 
+    signal(SIGINT, cleanup);
+    signal(SIGHUP, cleanup);
+    signal(SIGABRT, cleanup);
+
+    strcpy(background, "white");
+    strcpy(foreground, "black");
+    
+
     tcgetattr(STDIN_FILENO, &original_term_attrs);
     
-    struct termios raw_term_attrs;
     raw_term_attrs = original_term_attrs;
-    raw_term_attrs.c_lflag &= ~(ECHO | ICANON);
+    raw_term_attrs.c_lflag &= ~((uint)ECHO | ICANON);
     tcsetattr(STDIN_FILENO, TCSANOW, &raw_term_attrs);
 
     read_term_response("\033[c", 'c', term_reply);
-    
-    bool has_sixel = false;
-    char *force_sixel = getenv("LSIX_FORCE_SIXEL_SUPPORT");
     
     char *find_sixel_1 = strstr(term_reply, ";4;");
     char *find_sixel_2 = strstr(term_reply, "?4;");
@@ -480,5 +479,4 @@ int main(int argc, char **argv) {
 
     memory_check();
     cleanup(0);
-    return 0;
 }
