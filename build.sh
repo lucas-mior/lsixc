@@ -321,55 +321,7 @@ case "$target" in
     ;;
 esac
 
-create_temp_files() {
-    tmpdir="/tmp/brn2"
-    rm -rf "$tmpdir"
-    mkdir -p "$tmpdir"
-    cd "$tmpdir" || exit
-
-    seq -w 2000000 | sed 's/^/0011223344/g' | xargs -P"$(nproc)" touch
-}
-
 case "$target" in
-"benchmark")
-    create_temp_files
-    ls > "rename"
-
-    # strace -f -c -o $dir/strace.txt $dir/brn2 -s -q -d . 2>&1
-    trace_on
-    $dir/$exe -s -q -f "rename"
-    trace_off
-    rm $dir/$exe
-    exit
-    ;;
-"valgrind")
-    create_temp_files
-    ls > rename
-
-    vg_flags="--error-exitcode=1 --errors-for-leak-kinds=all"
-    vg_flags="$vg_flags --leak-check=full --show-leak-kinds=all"
-    vg_flags="$vg_flags --track-origins=yes"
-
-    trace_on
-    find . \
-    | valgrind $vg_flags -s --tool=memcheck $dir/bin/brn2 -f -
-    valgrind   $vg_flags -s --tool=memcheck $dir/bin/brn2 -d .
-    valgrind   $vg_flags -s --tool=memcheck $dir/bin/brn2 -f rename
-    trace_off
-    exit
-    ;;
-"perf")
-    create_temp_files
-
-    cd /tmp/brn2 || exit
-    trace_on
-    perf record -b -o $dir/perf.data $dir/$exe -s -q -d .
-    cd "$dir"
-    perf annotate $dir/$exe
-    perf report -v perf.data
-    trace_off
-    exit
-    ;;
 "check")
     CC=gcc CFLAGS="-fanalyzer" ./build.sh
     scan-build --view -analyze-headers --status-bugs ./build.sh
