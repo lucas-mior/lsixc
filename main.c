@@ -16,6 +16,8 @@
 #include <errno.h>
 
 #include "util.c"
+#define MEMORY_CHECK_USE_AFTER_FREE 0
+#include "memory.c"
 
 static struct termios original_terminal_attributes;
 
@@ -233,8 +235,9 @@ int main(int argc, char **argv) {
                     }
                     
                     if (is_image_file == 1) {
-                        file_list = realloc(file_list, (file_count + 1) * sizeof(char *));
-                        file_list[file_count] = strdup(filename);
+                        file_list = realloc2(file_list, file_count, file_count + 1, sizeof(char *));
+                        file_list[file_count] = malloc2(filename_length + 1);
+                        strcpy(file_list[file_count], filename);
                         file_count += 1;
                     }
                 }
@@ -275,8 +278,10 @@ int main(int argc, char **argv) {
                     break;
                 }
             } else {
-                file_list = realloc(file_list, (file_count + 1) * sizeof(char *));
-                file_list[file_count] = strdup(argv[i]);
+                int32 arg_len = strlen32(argv[i]);
+                file_list = realloc2(file_list, file_count, file_count + 1, sizeof(char *));
+                file_list[file_count] = malloc2(arg_len + 1);
+                strcpy(file_list[file_count], argv[i]);
                 file_count += 1;
             }
         }
@@ -362,7 +367,8 @@ int main(int argc, char **argv) {
         while (current_file_index < file_count && remaining_files > goal) {
             char *current_file_name = file_list[current_file_index];
             
-            char *processed_label = strdup(current_file_name);
+            char *processed_label = malloc2(strlen32(current_file_name) + 1);
+            strcpy(processed_label, current_file_name);
             allocated_labels[alloc_count] = processed_label;
             
             char *label_pointer = processed_label;
@@ -481,11 +487,11 @@ int main(int argc, char **argv) {
         waitpid(sixel_pid, NULL, 0);
         
         for (int32 i = 0; i < alloc_count; i += 1) {
-            free(allocated_labels[i]);
-            free(allocated_urls[i]);
+            free2(allocated_labels[i], strlen32(allocated_labels[i]) + 1);
+            free2(allocated_urls[i], 1024);
         }
-        free(allocated_labels);
-        free(allocated_urls);
+        free2(allocated_labels, sizeof(char *) * file_count);
+        free2(allocated_urls, sizeof(char *) * file_count);
     }
     
     pid_t cat_pid;
@@ -505,5 +511,6 @@ int main(int argc, char **argv) {
     read_terminal_response("\033[c", 'c', 60.0, terminal_reply, sizeof(terminal_reply));
 
     cleanup(0);
+    memory_check();
     return 0;
 }
