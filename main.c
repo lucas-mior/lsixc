@@ -122,16 +122,18 @@ int main(int argc, char **argv) {
 
     read_term_response("\033[c", 'c', term_reply);
     
-    char *find_sixel_1 = strstr(term_reply, ";4;");
-    char *find_sixel_2 = strstr(term_reply, "?4;");
-    char *find_sixel_3 = strstr(term_reply, ";4c");
-    
-    if (find_sixel_1 != NULL) {
-        has_sixel = true;
-    } else if (find_sixel_2 != NULL) {
-        has_sixel = true;
-    } else if (find_sixel_3 != NULL) {
-        has_sixel = true;
+    {
+        char *find_sixel_1 = strstr(term_reply, ";4;");
+        char *find_sixel_2 = strstr(term_reply, "?4;");
+        char *find_sixel_3 = strstr(term_reply, ";4c");
+        
+        if (find_sixel_1 != NULL) {
+            has_sixel = true;
+        } else if (find_sixel_2 != NULL) {
+            has_sixel = true;
+        } else if (find_sixel_3 != NULL) {
+            has_sixel = true;
+        }
     }
 
     if (has_sixel == 0) {
