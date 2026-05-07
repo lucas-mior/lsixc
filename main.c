@@ -388,8 +388,8 @@ int main(int argc, char **argv) {
         montage_argv[montage_argc++] = "gif:-";
         montage_argv[montage_argc++] = NULL;
         
-        int32 pipe_descriptors[2];
-        pipe(pipe_descriptors);
+        int32 pipes[2];
+        xpipe(pipes);
         
         pid_t montage_pid;
         switch (montage_pid = fork()) {
@@ -399,9 +399,9 @@ int main(int argc, char **argv) {
         case 0: {
             int32 error_fd;
             
-            XCLOSE(&pipe_descriptors[0]);
-            xdup2(pipe_descriptors[1], STDOUT_FILENO);
-            XCLOSE(&pipe_descriptors[1]);
+            XCLOSE(&pipes[0]);
+            xdup2(pipes[1], STDOUT_FILENO);
+            XCLOSE(&pipes[1]);
             
             error_fd = open(error_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
             if (error_fd != -1) {
@@ -426,9 +426,9 @@ int main(int argc, char **argv) {
             char num_colors_str[32];
             char *sixel_argv[6];
             
-            XCLOSE(&pipe_descriptors[1]);
-            xdup2(pipe_descriptors[0], STDIN_FILENO);
-            XCLOSE(&pipe_descriptors[0]);
+            XCLOSE(&pipes[1]);
+            xdup2(pipes[0], STDIN_FILENO);
+            XCLOSE(&pipes[0]);
             
             SNPRINTF(num_colors_str, "%d", num_colors);
             
@@ -447,8 +447,8 @@ int main(int argc, char **argv) {
             break;
         }
         
-        XCLOSE(&pipe_descriptors[0]);
-        XCLOSE(&pipe_descriptors[1]);
+        XCLOSE(&pipes[0]);
+        XCLOSE(&pipes[1]);
         
         waitpid(montage_pid, NULL, 0);
         waitpid(sixel_pid, NULL, 0);
