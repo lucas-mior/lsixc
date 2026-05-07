@@ -27,7 +27,6 @@ cleanup(int signal_number) {
     (void)signal_number;
     tcsetattr(STDIN_FILENO, TCSANOW, &original_terminal_attrs);
     printf("\033\\");
-    printf("\n");
     exit(EXIT_SUCCESS);
 }
 
@@ -465,6 +464,7 @@ int main(int argc, char **argv) {
         error("Error forking: %s\n", strerror(errno));
         fatal(EXIT_FAILURE);
     case 0:
+        printf("\n");
         execlp("cat", "cat", temporary_error_file, (char *)NULL);
         error("Error executing cat: %s\n", strerror(errno));
         fatal(EXIT_FAILURE);
