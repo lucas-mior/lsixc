@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
     char terminal_reply[256];
     read_terminal_response("\033[c", 'c', 1.0, terminal_reply, sizeof(terminal_reply));
     
-    int32 has_sixel = 0;
+    bool has_sixel = false;
     char *force_sixel = getenv("LSIX_FORCE_SIXEL_SUPPORT");
     
     char *find_sixel_1 = strstr(terminal_reply, ";4;");
@@ -115,11 +115,11 @@ int main(int argc, char **argv) {
     char *find_sixel_3 = strstr(terminal_reply, ";4c");
     
     if (find_sixel_1 != NULL) {
-        has_sixel = 1;
+        has_sixel = true;
     } else if (find_sixel_2 != NULL) {
-        has_sixel = 1;
+        has_sixel = true;
     } else if (find_sixel_3 != NULL) {
-        has_sixel = 1;
+        has_sixel = true;
     }
 
     if (has_sixel == 0) {
