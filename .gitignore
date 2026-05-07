@@ -1,3 +1,4 @@
 .tags.vim
 tags
 bin
+compile_commands.json

@@ -14,34 +14,38 @@
 #include <time.h>
 #include <sys/time.h>
 
-typedef int int32;
+#include "util.c"
 
-struct termios original_terminal_attributes;
+static struct termios original_terminal_attributes;
 
-void cleanup(int signal_number) {
+static void
+cleanup(int signal_number) {
+    (void)signal_number;
     tcsetattr(STDIN_FILENO, TCSANOW, &original_terminal_attributes);
     printf("\033\\");
     printf("\n");
-    exit(0);
-    return;
+    exit(EXIT_SUCCESS);
 }
 
-int32 read_terminal_response(char *sequence, char end_character, double timeout_seconds, char *output_buffer, int32 maximum_length) {
-    int32 sequence_length = strlen(sequence);
-    write(STDERR_FILENO, sequence, sequence_length);
-    
-    int32 index = 0;
-    struct timeval timeout_structure;
+static int32
+read_terminal_response(char *sequence, char end_character,
+                       double timeout_seconds,
+                       char *output_buffer, int32 maximum_length) {
+    struct timeval timeout;
     fd_set read_file_descriptors;
+    int32 index = 0;
+    int32 sequence_length = strlen32(sequence);
+    write64(STDERR_FILENO, sequence, sequence_length);
+    
     
     while (1) {
-        timeout_structure.tv_sec = (int32)timeout_seconds;
-        timeout_structure.tv_usec = (int32)((timeout_seconds - (int32)timeout_seconds) * 1000000);
+        timeout.tv_sec = (int32)timeout_seconds;
+        timeout.tv_usec = (int32)((timeout_seconds - (int32)timeout_seconds) * 1000000);
         
         FD_ZERO(&read_file_descriptors);
         FD_SET(STDIN_FILENO, &read_file_descriptors);
         
-        int32 select_result = select(STDIN_FILENO + 1, &read_file_descriptors, NULL, NULL, &timeout_structure);
+        int32 select_result = select(STDIN_FILENO + 1, &read_file_descriptors, NULL, NULL, &timeout);
         if (select_result <= 0) {
             break;
         }
@@ -228,7 +232,7 @@ int main(int argc, char **argv) {
                 }
                 
                 char *filename = directory_entry->d_name;
-                int32 filename_length = strlen(filename);
+                int32 filename_length = strlen32(filename);
                 
                 if (filename_length > 4) {
                     char *extension_four_chars = &filename[filename_length - 4];
@@ -340,7 +344,7 @@ int main(int argc, char **argv) {
         montage_argc += 1;
     }
     
-    int32 family_length = strlen(font_family);
+    int32 family_length = strlen32(font_family);
     if (family_length > 0) {
         montage_argv[montage_argc] = "-font";
         montage_argc += 1;
@@ -384,7 +388,7 @@ int main(int argc, char **argv) {
                 label_pointer += 1;
             }
             
-            int32 label_length = strlen(label_pointer);
+            int32 label_length = strlen32(label_pointer);
             for (int32 i = 0; i < label_length; i += 1) {
                 int32 is_control_character = iscntrl((unsigned char)label_pointer[i]);
                 if (is_control_character) {
@@ -398,7 +402,7 @@ int main(int argc, char **argv) {
             strcpy(file_url, "file://");
             strcat(file_url, current_file_name);
             
-            int32 name_length = strlen(current_file_name);
+            int32 name_length = strlen32(current_file_name);
             if (name_length > 4) {
                 char *extension_gif = &current_file_name[name_length - 4];
                 if (strcasecmp(extension_gif, ".gif") == 0) {
