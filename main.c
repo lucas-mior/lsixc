@@ -210,54 +210,57 @@ int main(int argc, char **argv) {
     int32 file_count = 0;
 
     if (argc == 1) {
-        DIR *directory = opendir(".");
-        if (directory != NULL) {
-            magic_t magic_cookie = magic_open(MAGIC_MIME_TYPE);
-            int32 magic_load_result;
-            struct dirent *directory_entry;
-            
-            if (magic_cookie == NULL) {
-                error("Error initializing magic library\n");
-                fatal(EXIT_FAILURE);
-            }
-            
-            magic_load_result = magic_load(magic_cookie, NULL);
-            if (magic_load_result != 0) {
-                error("Error loading magic database: %s\n", (char *)magic_error(magic_cookie));
-                fatal(EXIT_FAILURE);
-            }
-            
-            while (1) {
-                directory_entry = readdir(directory);
-                if (directory_entry == NULL) {
-                    break;
-                }
-                
-                char *filename = directory_entry->d_name;
-                int32 filename_length = strlen32(filename);
-                int32 is_image_file = 0;
-                char *mime_type = (char *)magic_file(magic_cookie, filename);
-                
-                if (mime_type != NULL) {
-                    int32 compare_result = strncmp(mime_type, "image/", 6);
-                    if (compare_result == 0) {
-                        is_image_file = 1;
-                    }
-                }
-                
-                if (is_image_file == 1) {
-                    file_list = realloc2(file_list, file_count, file_count + 1, SIZEOF(char *));
-                    file_list[file_count] = malloc2(filename_length + 1);
-                    strcpy(file_list[file_count], filename);
-                    file_count += 1;
-                }
-            }
-            
-            magic_close(magic_cookie);
-            closedir(directory);
-            
-            qsort64(file_list, file_count, SIZEOF(char *), compare_strings);
+        DIR *directory;
+        magic_t magic_cookie = magic_open(MAGIC_MIME_TYPE);
+        int32 magic_load_result;
+        struct dirent *directory_entry;
+
+        if ((directory = opendir(".")) == NULL) {
+            error("Error opening current directory: %s.\n", strerror(errno));
+            fatal(EXIT_FAILURE);
         }
+            
+        if (magic_cookie == NULL) {
+            error("Error initializing magic library\n");
+            fatal(EXIT_FAILURE);
+        }
+        
+        magic_load_result = magic_load(magic_cookie, NULL);
+        if (magic_load_result != 0) {
+            error("Error loading magic database: %s\n", (char *)magic_error(magic_cookie));
+            fatal(EXIT_FAILURE);
+        }
+        
+        while (1) {
+            directory_entry = readdir(directory);
+            if (directory_entry == NULL) {
+                break;
+            }
+            
+            char *filename = directory_entry->d_name;
+            int32 filename_length = strlen32(filename);
+            int32 is_image_file = 0;
+            char *mime_type = (char *)magic_file(magic_cookie, filename);
+            
+            if (mime_type != NULL) {
+                int32 compare_result = strncmp(mime_type, "image/", 6);
+                if (compare_result == 0) {
+                    is_image_file = 1;
+                }
+            }
+            
+            if (is_image_file == 1) {
+                file_list = realloc2(file_list, file_count, file_count + 1, SIZEOF(char *));
+                file_list[file_count] = malloc2(filename_length + 1);
+                strcpy(file_list[file_count], filename);
+                file_count += 1;
+            }
+        }
+        
+        magic_close(magic_cookie);
+        closedir(directory);
+        
+        qsort64(file_list, file_count, SIZEOF(char *), compare_strings);
     } else {
         for (int32 i = 1; i < argc; i += 1) {
             struct stat path_status;
