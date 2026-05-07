@@ -42,7 +42,7 @@ read_terminal_response(char *sequence, char end_character,
     write64(STDERR_FILENO, sequence, sequence_length);
     
     while (1) {
-        int32 select_result;
+        int32 selected;
         char current_character;
         int64 read_bytes;
 
@@ -52,8 +52,8 @@ read_terminal_response(char *sequence, char end_character,
         FD_ZERO(&read_file_descriptors);
         FD_SET(STDIN_FILENO, &read_file_descriptors);
         
-        select_result = select(STDIN_FILENO + 1, &read_file_descriptors, NULL, NULL, &timeout);
-        if (select_result <= 0) {
+        selected = select(STDIN_FILENO + 1, &read_file_descriptors, NULL, NULL, &timeout);
+        if (selected <= 0) {
             break;
         }
         
