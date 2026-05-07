@@ -32,8 +32,8 @@ cleanup(int signal_number) {
 
 static int32
 read_terminal_response(char *sequence, char end_character,
-                       double timeout_seconds,
                        char *output_buffer, int32 maximum_length) {
+    static double timeout_seconds = 0.01;
     struct timeval timeout;
     fd_set read_file_descriptors;
     int32 index = 0;
@@ -100,7 +100,6 @@ int main(int argc, char **argv) {
     int32 tile_width = tile_size;
     int32 tile_height = tile_size;
     int32 font_size = tile_width / 10;
-    double timeout_seconds = 0.01;
     
     char *font_family = "Dejavu-Sans";
 
@@ -112,7 +111,7 @@ int main(int argc, char **argv) {
     tcsetattr(STDIN_FILENO, TCSANOW, &raw_terminal_attrs);
 
     char terminal_reply[256];
-    read_terminal_response("\033[c", 'c', 1.0, terminal_reply, SIZEOF(terminal_reply));
+    read_terminal_response("\033[c", 'c', terminal_reply, SIZEOF(terminal_reply));
     
     bool has_sixel = false;
     char *force_sixel = getenv("LSIX_FORCE_SIXEL_SUPPORT");
@@ -136,7 +135,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    read_terminal_response("\033[?1;1;0S", 'S', timeout_seconds, terminal_reply, SIZEOF(terminal_reply));
+    read_terminal_response("\033[?1;1;0S", 'S', terminal_reply, SIZEOF(terminal_reply));
     
     int32 parsed_colors = 0;
     int32 scan_result = sscanf(terminal_reply, "\033[?1;0;%dS", &parsed_colors);
@@ -159,16 +158,16 @@ int main(int argc, char **argv) {
     }
 
     if (num_colors < 256) {
-        read_terminal_response("\033[?1;3;256S", 'S', timeout_seconds, terminal_reply, SIZEOF(terminal_reply));
+        read_terminal_response("\033[?1;3;256S", 'S', terminal_reply, SIZEOF(terminal_reply));
         scan_result = sscanf(terminal_reply, "\033[?1;0;%dS", &parsed_colors);
         if (scan_result == 1) {
             num_colors = parsed_colors;
         }
     }
 
-    read_terminal_response("\033]11;?\033\\", '\\', timeout_seconds, terminal_reply, SIZEOF(terminal_reply));
+    read_terminal_response("\033]11;?\033\\", '\\', terminal_reply, SIZEOF(terminal_reply));
     
-    read_terminal_response("\033[?2;1;0S", 'S', timeout_seconds, terminal_reply, SIZEOF(terminal_reply));
+    read_terminal_response("\033[?2;1;0S", 'S', terminal_reply, SIZEOF(terminal_reply));
     
     int32 parsed_width = 0;
     scan_result = sscanf(terminal_reply, "\033[?2;1;%dS", &parsed_width);
@@ -177,7 +176,7 @@ int main(int argc, char **argv) {
             screen_width = parsed_width;
         }
     } else {
-        read_terminal_response("\033[14t", 't', timeout_seconds, terminal_reply, SIZEOF(terminal_reply));
+        read_terminal_response("\033[14t", 't', terminal_reply, SIZEOF(terminal_reply));
         scan_result = sscanf(terminal_reply, "\033[4;%d;%dt", &parsed_colors, &parsed_width);
         if (scan_result == 2) {
             if (parsed_width > 0) {
@@ -473,7 +472,7 @@ int main(int argc, char **argv) {
         break;
     }
 
-    read_terminal_response("\033[c", 'c', 60.0, terminal_reply, SIZEOF(terminal_reply));
+    read_terminal_response("\033[c", 'c', terminal_reply, SIZEOF(terminal_reply));
 
     cleanup(0);
     memory_check();
