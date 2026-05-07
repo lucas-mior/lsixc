@@ -46,7 +46,7 @@ read_term_response(char *sequence, char end_character, char *output_buffer) {
         int64 read_bytes;
 
         timeout.tv_sec = (int32)timeout_seconds;
-        timeout.tv_usec = (int32)((timeout_seconds - (int32)timeout_seconds) * 1000000);
+        timeout.tv_usec = (int32)((timeout_seconds - (int32)timeout_seconds)*1000000);
         
         FD_ZERO(&read_fds);
         FD_SET(STDIN_FILENO, &read_fds);
@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
 
     int32 tile_x_space = screen_width / 201;
     int32 tile_y_space = tile_x_space / 2;
-    int32 width_denominator = tile_width + 2 * tile_x_space + 1;
+    int32 width_denominator = tile_width + 2*tile_x_space + 1;
     int32 num_tiles = screen_width / width_denominator;
 
     char error_file[256];
@@ -323,6 +323,7 @@ int main(int argc, char **argv) {
         int32 remaining_files;
         int32 pipes[2];
         pid_t montage_pid;
+        pid_t sixel_pid;
 
         montage_argc = base_argc;
         
@@ -330,8 +331,8 @@ int main(int argc, char **argv) {
             goal = 0;
         }
         
-        allocated_labels = malloc2(SIZEOF(char *) * image_list_len);
-        allocated_urls = malloc2(SIZEOF(char *) * image_list_len);
+        allocated_labels = malloc2(SIZEOF(char *)*image_list_len);
+        allocated_urls = malloc2(SIZEOF(char *)*image_list_len);
         alloc_count = 0;
         
         remaining_files = image_list_len - current_file_index;
@@ -418,7 +419,6 @@ int main(int argc, char **argv) {
             break;
         }
         
-        pid_t sixel_pid;
         switch (sixel_pid = fork()) {
         case -1:
             error("Error forking: %s\n", strerror(errno));
@@ -458,8 +458,8 @@ int main(int argc, char **argv) {
             free2(allocated_labels[i], strlen32(allocated_labels[i]) + 1);
             free2(allocated_urls[i], 1024);
         }
-        free2(allocated_labels, SIZEOF(char *) * image_list_len);
-        free2(allocated_urls, SIZEOF(char *) * image_list_len);
+        free2(allocated_labels, SIZEOF(char *)*image_list_len);
+        free2(allocated_urls, SIZEOF(char *)*image_list_len);
     }
     
     {
