@@ -256,7 +256,7 @@ int main(int argc, char **argv) {
             magic_close(magic_cookie);
             closedir(directory);
             
-            qsort(file_list, file_count, SIZEOF(char *), compare_strings);
+            qsort64(file_list, file_count, SIZEOF(char *), compare_strings);
         }
     } else {
         for (int32 i = 1; i < argc; i += 1) {
