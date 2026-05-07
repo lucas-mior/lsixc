@@ -20,18 +20,18 @@
 #define MEMORY_CHECK_USE_AFTER_FREE 0
 #include "memory.c"
 
-static struct termios original_terminal_attrs;
+static struct termios original_term_attrs;
 
 static void __attribute((noreturn))
 cleanup(int signal_number) {
     (void)signal_number;
-    tcsetattr(STDIN_FILENO, TCSANOW, &original_terminal_attrs);
+    tcsetattr(STDIN_FILENO, TCSANOW, &original_term_attrs);
     printf("\033\\");
     exit(EXIT_SUCCESS);
 }
 
 static int32
-read_terminal_response(char *sequence, char end_character,
+read_term_response(char *sequence, char end_character,
                        char *output_buffer, int32 maximum_length) {
     static double timeout_seconds = 0.01;
     struct timeval timeout;
@@ -53,7 +53,11 @@ read_terminal_response(char *sequence, char end_character,
         
         selected = select(STDIN_FILENO + 1, &read_file_descriptors, NULL, NULL, &timeout);
         if (selected <= 0) {
-            error("Terminal didnt answer for %s.\n", sequence);
+            error("Terminal didnt answer for the sequence\n");
+            for (int32 i = 0; i < sequence_length; i += 1) {
+                fprintf(stderr, "%c ", sequence[i]);
+            }
+            error("\n");
             break;
         }
         
@@ -104,22 +108,22 @@ int main(int argc, char **argv) {
     
     char *font_family = "Dejavu-Sans";
 
-    tcgetattr(STDIN_FILENO, &original_terminal_attrs);
+    tcgetattr(STDIN_FILENO, &original_term_attrs);
     
-    struct termios raw_terminal_attrs;
-    raw_terminal_attrs = original_terminal_attrs;
-    raw_terminal_attrs.c_lflag &= ~(ECHO | ICANON);
-    tcsetattr(STDIN_FILENO, TCSANOW, &raw_terminal_attrs);
+    struct termios raw_term_attrs;
+    raw_term_attrs = original_term_attrs;
+    raw_term_attrs.c_lflag &= ~(ECHO | ICANON);
+    tcsetattr(STDIN_FILENO, TCSANOW, &raw_term_attrs);
 
-    char terminal_reply[256];
-    read_terminal_response("\033[c", 'c', terminal_reply, SIZEOF(terminal_reply));
+    char term_reply[256];
+    read_term_response("\033[c", 'c', term_reply, SIZEOF(term_reply));
     
     bool has_sixel = false;
     char *force_sixel = getenv("LSIX_FORCE_SIXEL_SUPPORT");
     
-    char *find_sixel_1 = strstr(terminal_reply, ";4;");
-    char *find_sixel_2 = strstr(terminal_reply, "?4;");
-    char *find_sixel_3 = strstr(terminal_reply, ";4c");
+    char *find_sixel_1 = strstr(term_reply, ";4;");
+    char *find_sixel_2 = strstr(term_reply, "?4;");
+    char *find_sixel_3 = strstr(term_reply, ";4c");
     
     if (find_sixel_1 != NULL) {
         has_sixel = true;
@@ -136,10 +140,10 @@ int main(int argc, char **argv) {
         }
     }
 
-    read_terminal_response("\033[?1;1;0S", 'S', terminal_reply, SIZEOF(terminal_reply));
+    read_term_response("\033[?1;1;0S", 'S', term_reply, SIZEOF(term_reply));
     
     int32 parsed_colors = 0;
-    int32 scan_result = sscanf(terminal_reply, "\033[?1;0;%dS", &parsed_colors);
+    int32 scan_result = sscanf(term_reply, "\033[?1;0;%dS", &parsed_colors);
     if (scan_result == 1) {
         num_colors = parsed_colors;
     }
@@ -159,26 +163,26 @@ int main(int argc, char **argv) {
     }
 
     if (num_colors < 256) {
-        read_terminal_response("\033[?1;3;256S", 'S', terminal_reply, SIZEOF(terminal_reply));
-        scan_result = sscanf(terminal_reply, "\033[?1;0;%dS", &parsed_colors);
+        read_term_response("\033[?1;3;256S", 'S', term_reply, SIZEOF(term_reply));
+        scan_result = sscanf(term_reply, "\033[?1;0;%dS", &parsed_colors);
         if (scan_result == 1) {
             num_colors = parsed_colors;
         }
     }
 
-    read_terminal_response("\033]11;?\033\\", '\\', terminal_reply, SIZEOF(terminal_reply));
+    read_term_response("\033]11;?\033\\", '\\', term_reply, SIZEOF(term_reply));
     
-    read_terminal_response("\033[?2;1;0S", 'S', terminal_reply, SIZEOF(terminal_reply));
+    read_term_response("\033[?2;1;0S", 'S', term_reply, SIZEOF(term_reply));
     
     int32 parsed_width = 0;
-    scan_result = sscanf(terminal_reply, "\033[?2;1;%dS", &parsed_width);
+    scan_result = sscanf(term_reply, "\033[?2;1;%dS", &parsed_width);
     if (scan_result == 1) {
         if (parsed_width > 0) {
             screen_width = parsed_width;
         }
     } else {
-        read_terminal_response("\033[14t", 't', terminal_reply, SIZEOF(terminal_reply));
-        scan_result = sscanf(terminal_reply, "\033[4;%d;%dt", &parsed_colors, &parsed_width);
+        read_term_response("\033[14t", 't', term_reply, SIZEOF(term_reply));
+        scan_result = sscanf(term_reply, "\033[4;%d;%dt", &parsed_colors, &parsed_width);
         if (scan_result == 2) {
             if (parsed_width > 0) {
                 screen_width = parsed_width;
@@ -473,7 +477,7 @@ int main(int argc, char **argv) {
         break;
     }
 
-    read_terminal_response("\033[c", 'c', terminal_reply, SIZEOF(terminal_reply));
+    read_term_response("\033[c", 'c', term_reply, SIZEOF(term_reply));
 
     cleanup(0);
     memory_check();
