@@ -314,8 +314,7 @@ int main(int argc, char **argv) {
         montage_argv[montage_argc++] = "-shadow";
     }
     
-    int32 family_len = strlen32(font_family);
-    if (family_len > 0) {
+    if (strlen32(font_family) > 0) {
         montage_argv[montage_argc++] = "-font";
         montage_argv[montage_argc++] = font_family;
     }
