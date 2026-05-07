@@ -42,7 +42,7 @@ read_terminal_response(char *sequence, char end_character,
     
     while (1) {
         int32 selected;
-        char current_character;
+        char current_char;
         int64 read_bytes;
 
         timeout.tv_sec = (int32)timeout_seconds;
@@ -56,17 +56,17 @@ read_terminal_response(char *sequence, char end_character,
             break;
         }
         
-        read_bytes = read(STDIN_FILENO, &current_character, 1);
+        read_bytes = read(STDIN_FILENO, &current_char, 1);
         if (read_bytes <= 0) {
             break;
         }
         
         if (index < maximum_length - 1) {
-            output_buffer[index] = current_character;
+            output_buffer[index] = current_char;
             index += 1;
         }
         
-        if (current_character == end_character) {
+        if (current_char == end_character) {
             break;
         }
     }
