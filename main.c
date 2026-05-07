@@ -202,9 +202,9 @@ int main(int argc, char **argv) {
     int32 width_denominator = tile_width + 2 * tile_x_space + 1;
     int32 num_tiles = screen_width / width_denominator;
 
-    char temporary_error_file[256];
+    char error_file[256];
     int32 current_time = (int32)time(NULL);
-    SNPRINTF(temporary_error_file, "/tmp/lsix-%d.error", current_time);
+    SNPRINTF(error_file, "/tmp/lsix-%d.error", current_time);
 
     char **file_list = NULL;
     int32 file_count = 0;
@@ -404,7 +404,7 @@ int main(int argc, char **argv) {
             xdup2(pipe_descriptors[1], STDOUT_FILENO);
             XCLOSE(&pipe_descriptors[1]);
             
-            error_fd = open(temporary_error_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+            error_fd = open(error_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
             if (error_fd != -1) {
                 xdup2(error_fd, STDERR_FILENO);
                 XCLOSE(&error_fd);
@@ -469,7 +469,7 @@ int main(int argc, char **argv) {
         fatal(EXIT_FAILURE);
     case 0:
         printf("\n");
-        execlp("cat", "cat", temporary_error_file, (char *)NULL);
+        execlp("cat", "cat", error_file, (char *)NULL);
         error("Error executing cat: %s\n", strerror(errno));
         fatal(EXIT_FAILURE);
     default:
