@@ -113,6 +113,18 @@ int main(int argc, char **argv) {
     
     char *font_family = "Dejavu-Sans";
 
+    int32 tile_x_space = screen_width / 201;
+    int32 tile_y_space = tile_x_space / 2;
+    int32 width_denominator = tile_width + 2*tile_x_space + 1;
+    int32 num_tiles = screen_width / width_denominator;
+
+    char error_file[256];
+    int32 current_time = (int32)time(NULL);
+    SNPRINTF(error_file, "/tmp/lsix-%d.error", current_time);
+
+    FileName *image_list = NULL;
+    int32 image_list_len = 0;
+
     signal(SIGINT, cleanup);
     signal(SIGHUP, cleanup);
     signal(SIGABRT, cleanup);
@@ -199,18 +211,6 @@ int main(int argc, char **argv) {
             screen_width = 1000;
         }
     }
-
-    int32 tile_x_space = screen_width / 201;
-    int32 tile_y_space = tile_x_space / 2;
-    int32 width_denominator = tile_width + 2*tile_x_space + 1;
-    int32 num_tiles = screen_width / width_denominator;
-
-    char error_file[256];
-    int32 current_time = (int32)time(NULL);
-    SNPRINTF(error_file, "/tmp/lsix-%d.error", current_time);
-
-    FileName *image_list = NULL;
-    int32 image_list_len = 0;
 
     if (argc == 1) {
         DIR *directory;
