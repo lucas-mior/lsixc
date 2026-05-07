@@ -86,11 +86,11 @@ read_term_response(char *sequence, char end_character, char *output_buffer) {
 }
 
 static int32
-compare_strings(const void *a, const void *b) {
-    char **string_a = (char **)a;
-    char **string_b = (char **)b;
+compare_filenames(const void *a, const void *b) {
+    FileName *file_a = (FileName *)a;
+    FileName *file_b = (FileName *)b;
     
-    return strcmp(*string_a, *string_b);
+    return strcmp(file_a->name, file_b->name);
 }
 
 int main(int argc, char **argv) {
@@ -209,7 +209,7 @@ int main(int argc, char **argv) {
     int32 current_time = (int32)time(NULL);
     SNPRINTF(error_file, "/tmp/lsix-%d.error", current_time);
 
-    char **image_list = NULL;
+    FileName *image_list = NULL;
     int32 image_list_len = 0;
 
     if (argc == 1) {
@@ -245,8 +245,9 @@ int main(int argc, char **argv) {
 
             if (BEGINS_WITH((char *)mime_type, "image/")) {
                 image_list = realloc2(image_list, image_list_len, image_list_len + 1, SIZEOF(*image_list));
-                image_list[image_list_len] = malloc2(filename_len + 1);
-                strcpy(image_list[image_list_len], filename);
+                image_list[image_list_len].name = malloc2(filename_len + 1);
+                strcpy(image_list[image_list_len].name, filename);
+                image_list[image_list_len].len = filename_len;
                 image_list_len += 1;
             }
         }
@@ -254,7 +255,7 @@ int main(int argc, char **argv) {
         magic_close(magic_cookie);
         closedir(directory);
         
-        qsort64(image_list, image_list_len, SIZEOF(*image_list), compare_strings);
+        qsort64(image_list, image_list_len, SIZEOF(*image_list), compare_filenames);
     } else {
         for (int32 i = 1; i < argc; i += 1) {
             struct stat path_status;
@@ -265,8 +266,9 @@ int main(int argc, char **argv) {
             } else {
                 int32 arg_len = strlen32(argv[i]);
                 image_list = realloc2(image_list, image_list_len, image_list_len + 1, SIZEOF(*image_list));
-                image_list[image_list_len] = malloc2(arg_len + 1);
-                strcpy(image_list[image_list_len], argv[i]);
+                image_list[image_list_len].name = malloc2(arg_len + 1);
+                strcpy(image_list[image_list_len].name, argv[i]);
+                image_list[image_list_len].len = arg_len;
                 image_list_len += 1;
             }
         }
@@ -342,13 +344,13 @@ int main(int argc, char **argv) {
         
         remaining_files = image_list_len - current_file_index;
         while (current_file_index < image_list_len && remaining_files > goal) {
-            char *current_file_name = image_list[current_file_index];
+            char *current_file_name = image_list[current_file_index].name;
+            int32 name_len = image_list[current_file_index].len;
             char *label_pointer;
             int32 label_len;
             char *file_url;
-            int32 name_len;
             
-            char *processed_label = malloc2(strlen32(current_file_name) + 1);
+            char *processed_label = malloc2(name_len + 1);
             strcpy(processed_label, current_file_name);
             allocated_labels[alloc_count] = processed_label;
             
@@ -370,7 +372,6 @@ int main(int argc, char **argv) {
             strcpy(file_url, "file://");
             strcat(file_url, current_file_name);
             
-            name_len = strlen32(current_file_name);
             if (name_len > 4) {
                 char *extension_gif = &current_file_name[name_len - 4];
                 if (strcasecmp(extension_gif, ".gif") == 0) {
