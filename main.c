@@ -349,25 +349,11 @@ int main(int argc, char **argv) {
         while (current_file_index < image_list_len && remaining_files > goal) {
             char *current_file_name = image_list[current_file_index].name;
             int32 name_len = image_list[current_file_index].len;
-            char *label_pointer;
-            int32 label_len;
             char *file_url;
             
             char *processed_label = malloc2(name_len + 1);
             strcpy(processed_label, current_file_name);
             allocated_labels[alloc_count] = processed_label;
-            
-            label_pointer = processed_label;
-            if (label_pointer[0] == ':') {
-                label_pointer += 1;
-            }
-            
-            label_len = strlen32(label_pointer);
-            for (int32 i = 0; i < label_len; i += 1) {
-                if (iscntrl((uchar)label_pointer[i])) {
-                    label_pointer[i] = '?';
-                }
-            }
             
             file_url = malloc2(1024);
             allocated_urls[alloc_count] = file_url;
@@ -390,7 +376,7 @@ int main(int argc, char **argv) {
             }
             
             montage_argv[montage_argc++] = "-label";
-            montage_argv[montage_argc++] = label_pointer;
+            montage_argv[montage_argc++] = current_file_name;
             montage_argv[montage_argc++] = file_url;
             
             alloc_count += 1;
