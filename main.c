@@ -90,6 +90,7 @@ compare_strings(const void *a, const void *b) {
 
 int main(int argc, char **argv) {
     char term_reply[MAX_TERM_RESPONSE_LEN];
+    char *TERM;
 
     signal(SIGINT, cleanup);
     signal(SIGHUP, cleanup);
@@ -149,15 +150,12 @@ int main(int argc, char **argv) {
         num_colors = parsed_colors;
     }
 
-    char *TERM;
-
     if ((TERM = getenv("TERM")) == NULL) {
         error("TERM environment variable is not set.\n");
         fatal(EXIT_FAILURE);
     }
 
-    int32 compare_yaft_result = strncmp(TERM, "yaft", 4);
-    if (compare_yaft_result == 0) {
+    if (!strncmp(TERM, "yaft", 4)) {
         num_colors = 256;
         strcpy(background, "black");
         strcpy(foreground, "white");
