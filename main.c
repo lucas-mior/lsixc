@@ -53,6 +53,7 @@ read_terminal_response(char *sequence, char end_character,
         
         selected = select(STDIN_FILENO + 1, &read_file_descriptors, NULL, NULL, &timeout);
         if (selected <= 0) {
+            error("Terminal didnt answer for %s.\n", sequence);
             break;
         }
         
