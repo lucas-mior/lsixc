@@ -262,7 +262,10 @@ int main(int argc, char **argv) {
     } else {
         for (int32 i = 1; i < argc; i += 1) {
             struct stat path_status;
-            stat(argv[i], &path_status);
+            if (stat(argv[i], &path_status) < 0) {
+                error("Error in stat(%s): %s.\n", argv[i], strerror(errno));
+                fatal(EXIT_FAILURE);
+            }
             
             if (S_ISDIR(path_status.st_mode)) {
                 continue;
