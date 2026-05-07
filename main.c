@@ -258,10 +258,9 @@ int main(int argc, char **argv) {
             struct stat path_status;
             stat(argv[i], &path_status);
             
-            int32 is_directory = S_ISDIR(path_status.st_mode);
-            if (is_directory) {
-                printf("Recursing on %s\n", argv[i]);
+            if (S_ISDIR(path_status.st_mode)) {
                 pid_t recurse_pid;
+                printf("Recursing on %s\n", argv[i]);
                 switch (recurse_pid = fork()) {
                 case -1:
                     error("Error forking: %s\n", strerror(errno));
