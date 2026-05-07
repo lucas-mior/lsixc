@@ -19,12 +19,12 @@
 #define MEMORY_CHECK_USE_AFTER_FREE 0
 #include "memory.c"
 
-static struct termios original_terminal_attributes;
+static struct termios original_terminal_attrs;
 
 static void __attribute((noreturn))
 cleanup(int signal_number) {
     (void)signal_number;
-    tcsetattr(STDIN_FILENO, TCSANOW, &original_terminal_attributes);
+    tcsetattr(STDIN_FILENO, TCSANOW, &original_terminal_attrs);
     printf("\033\\");
     printf("\n");
     exit(EXIT_SUCCESS);
@@ -96,12 +96,12 @@ int main(int argc, char **argv) {
     
     char *font_family = "Dejavu-Sans";
 
-    tcgetattr(STDIN_FILENO, &original_terminal_attributes);
+    tcgetattr(STDIN_FILENO, &original_terminal_attrs);
     
-    struct termios raw_terminal_attributes;
-    raw_terminal_attributes = original_terminal_attributes;
-    raw_terminal_attributes.c_lflag &= ~(ECHO | ICANON);
-    tcsetattr(STDIN_FILENO, TCSANOW, &raw_terminal_attributes);
+    struct termios raw_terminal_attrs;
+    raw_terminal_attrs = original_terminal_attrs;
+    raw_terminal_attrs.c_lflag &= ~(ECHO | ICANON);
+    tcsetattr(STDIN_FILENO, TCSANOW, &raw_terminal_attrs);
 
     char terminal_reply[256];
     read_terminal_response("\033[c", 'c', 1.0, terminal_reply, sizeof(terminal_reply));
