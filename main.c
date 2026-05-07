@@ -354,8 +354,8 @@ int main(int argc, char **argv) {
             goal = 0;
         }
         
-        char **allocated_labels = malloc(sizeof(char *) * file_count);
-        char **allocated_urls = malloc(sizeof(char *) * file_count);
+        char **allocated_labels = malloc2(sizeof(char *) * file_count);
+        char **allocated_urls = malloc2(sizeof(char *) * file_count);
         int32 alloc_count = 0;
         
         int32 remaining_files = file_count - current_file_index;
@@ -378,7 +378,7 @@ int main(int argc, char **argv) {
                 }
             }
             
-            char *file_url = malloc(1024);
+            char *file_url = malloc2(1024);
             allocated_urls[alloc_count] = file_url;
             
             strcpy(file_url, "file://");
