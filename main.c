@@ -211,7 +211,7 @@ int main(int argc, char **argv) {
 
     if (argc == 1) {
         DIR *directory;
-        magic_t magic_cookie = magic_open(MAGIC_MIME_TYPE);
+        magic_t magic_cookie;
         int32 magic_load_result;
         struct dirent *directory_entry;
 
@@ -220,7 +220,7 @@ int main(int argc, char **argv) {
             fatal(EXIT_FAILURE);
         }
             
-        if (magic_cookie == NULL) {
+        if ((magic_cookie = magic_open(MAGIC_MIME_TYPE)) == NULL) {
             error("Error initializing magic library\n");
             fatal(EXIT_FAILURE);
         }
