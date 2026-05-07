@@ -120,8 +120,8 @@ int main(int argc, char **argv) {
 
     char error_file[] = "/tmp/lsixc-XXXXXX";
 
-    FileName *image_list = NULL;
-    int32 image_list_len = 0;
+    FileName *list = NULL;
+    int32 list_len = 0;
 
     if (mkstemp(error_file) < 0) {
         error("Error in mkstemp: %s.\n", strerror(errno));
@@ -247,18 +247,18 @@ int main(int argc, char **argv) {
             }
 
             if (BEGINS_WITH((char *)mime_type, "image/")) {
-                image_list = realloc2(image_list, image_list_len, image_list_len + 1, SIZEOF(*image_list));
-                image_list[image_list_len].name = malloc2(filename_len + 1);
-                strcpy(image_list[image_list_len].name, filename);
-                image_list[image_list_len].len = filename_len;
-                image_list_len += 1;
+                list = realloc2(list, list_len, list_len + 1, SIZEOF(*list));
+                list[list_len].name = malloc2(filename_len + 1);
+                strcpy(list[list_len].name, filename);
+                list[list_len].len = filename_len;
+                list_len += 1;
             }
         }
         
         magic_close(magic_cookie);
         closedir(directory);
         
-        qsort64(image_list, image_list_len, SIZEOF(*image_list), compare_filenames);
+        qsort64(list, list_len, SIZEOF(*list), compare_filenames);
     } else {
         for (int32 i = 1; i < argc; i += 1) {
             struct stat path_status;
@@ -274,15 +274,15 @@ int main(int argc, char **argv) {
                 continue;
             }
 
-            image_list = realloc2(image_list, image_list_len, image_list_len + 1, SIZEOF(*image_list));
-            image_list[image_list_len].name = malloc2(path_len + 1);
-            strcpy(image_list[image_list_len].name, path);
-            image_list[image_list_len].len = path_len;
-            image_list_len += 1;
+            list = realloc2(list, list_len, list_len + 1, SIZEOF(*list));
+            list[list_len].name = malloc2(path_len + 1);
+            strcpy(list[list_len].name, path);
+            list[list_len].len = path_len;
+            list_len += 1;
         }
     }
 
-    if (image_list_len <= 0) {
+    if (list_len <= 0) {
         cleanup(0);
     }
 
@@ -330,7 +330,7 @@ int main(int argc, char **argv) {
     int32 base_argc = montage_argc;
     int32 current_file_index = 0;
     
-    while (current_file_index < image_list_len) {
+    while (current_file_index < list_len) {
         char **allocated_labels;
         char **allocated_urls;
         int32 alloc_count;
@@ -342,18 +342,18 @@ int main(int argc, char **argv) {
 
         montage_argc = base_argc;
         
-        if ((goal = image_list_len - num_tiles) < 0) {
+        if ((goal = list_len - num_tiles) < 0) {
             goal = 0;
         }
         
-        allocated_labels = malloc2(image_list_len*SIZEOF(*allocated_labels));
-        allocated_urls = malloc2(image_list_len*SIZEOF(*allocated_urls));
+        allocated_labels = malloc2(list_len*SIZEOF(*allocated_labels));
+        allocated_urls = malloc2(list_len*SIZEOF(*allocated_urls));
         alloc_count = 0;
         
-        remaining_files = image_list_len - current_file_index;
-        while (current_file_index < image_list_len && remaining_files > goal) {
-            char *current_file_name = image_list[current_file_index].name;
-            int32 name_len = image_list[current_file_index].len;
+        remaining_files = list_len - current_file_index;
+        while (current_file_index < list_len && remaining_files > goal) {
+            char *current_file_name = list[current_file_index].name;
+            int32 name_len = list[current_file_index].len;
             char *file_url;
             
             char *processed_label = malloc2(name_len + 1);
@@ -386,7 +386,7 @@ int main(int argc, char **argv) {
             
             alloc_count += 1;
             current_file_index += 1;
-            remaining_files = image_list_len - current_file_index;
+            remaining_files = list_len - current_file_index;
         }
         
         montage_argv[montage_argc++] = "gif:-";
@@ -458,8 +458,8 @@ int main(int argc, char **argv) {
             free2(allocated_labels[i], strlen32(allocated_labels[i]) + 1);
             free2(allocated_urls[i], 1024);
         }
-        free2(allocated_labels, image_list_len*SIZEOF(*allocated_labels));
-        free2(allocated_urls, image_list_len*SIZEOF(*allocated_urls));
+        free2(allocated_labels, list_len*SIZEOF(*allocated_labels));
+        free2(allocated_urls, list_len*SIZEOF(*allocated_urls));
     }
     
     catfile(STDERR_FILENO, error_file);
