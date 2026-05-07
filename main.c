@@ -354,7 +354,7 @@ int main(int argc, char **argv) {
             
             label_len = strlen32(label_pointer);
             for (int32 i = 0; i < label_len; i += 1) {
-                if (iscntrl((unsigned char)label_pointer[i])) {
+                if (iscntrl((uchar)label_pointer[i])) {
                     label_pointer[i] = '?';
                 }
             }
