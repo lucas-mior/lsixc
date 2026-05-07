@@ -206,8 +206,8 @@ int main(int argc, char **argv) {
     int32 current_time = (int32)time(NULL);
     SNPRINTF(error_file, "/tmp/lsix-%d.error", current_time);
 
-    char **file_list = NULL;
-    int32 file_count = 0;
+    char **image_list = NULL;
+    int32 image_list_len = 0;
 
     if (argc == 1) {
         DIR *directory;
@@ -241,17 +241,17 @@ int main(int argc, char **argv) {
             }
 
             if (BEGINS_WITH((char *)mime_type, "image/")) {
-                file_list = realloc2(file_list, file_count, file_count + 1, SIZEOF(char *));
-                file_list[file_count] = malloc2(filename_len + 1);
-                strcpy(file_list[file_count], filename);
-                file_count += 1;
+                image_list = realloc2(image_list, image_list_len, image_list_len + 1, SIZEOF(char *));
+                image_list[image_list_len] = malloc2(filename_len + 1);
+                strcpy(image_list[image_list_len], filename);
+                image_list_len += 1;
             }
         }
         
         magic_close(magic_cookie);
         closedir(directory);
         
-        qsort64(file_list, file_count, SIZEOF(char *), compare_strings);
+        qsort64(image_list, image_list_len, SIZEOF(char *), compare_strings);
     } else {
         for (int32 i = 1; i < argc; i += 1) {
             struct stat path_status;
@@ -261,15 +261,15 @@ int main(int argc, char **argv) {
                 continue;
             } else {
                 int32 arg_len = strlen32(argv[i]);
-                file_list = realloc2(file_list, file_count, file_count + 1, SIZEOF(char *));
-                file_list[file_count] = malloc2(arg_len + 1);
-                strcpy(file_list[file_count], argv[i]);
-                file_count += 1;
+                image_list = realloc2(image_list, image_list_len, image_list_len + 1, SIZEOF(char *));
+                image_list[image_list_len] = malloc2(arg_len + 1);
+                strcpy(image_list[image_list_len], argv[i]);
+                image_list_len += 1;
             }
         }
     }
 
-    if (file_count == 0) {
+    if (image_list_len == 0) {
         cleanup(0);
     }
 
@@ -317,21 +317,21 @@ int main(int argc, char **argv) {
     int32 base_argc = montage_argc;
     int32 current_file_index = 0;
     
-    while (current_file_index < file_count) {
+    while (current_file_index < image_list_len) {
         montage_argc = base_argc;
         
-        int32 goal = file_count - num_tiles;
+        int32 goal = image_list_len - num_tiles;
         if (goal < 0) {
             goal = 0;
         }
         
-        char **allocated_labels = malloc2(SIZEOF(char *) * file_count);
-        char **allocated_urls = malloc2(SIZEOF(char *) * file_count);
+        char **allocated_labels = malloc2(SIZEOF(char *) * image_list_len);
+        char **allocated_urls = malloc2(SIZEOF(char *) * image_list_len);
         int32 alloc_count = 0;
         
-        int32 remaining_files = file_count - current_file_index;
-        while (current_file_index < file_count && remaining_files > goal) {
-            char *current_file_name = file_list[current_file_index];
+        int32 remaining_files = image_list_len - current_file_index;
+        while (current_file_index < image_list_len && remaining_files > goal) {
+            char *current_file_name = image_list[current_file_index];
             
             char *processed_label = malloc2(strlen32(current_file_name) + 1);
             strcpy(processed_label, current_file_name);
@@ -377,7 +377,7 @@ int main(int argc, char **argv) {
             
             alloc_count += 1;
             current_file_index += 1;
-            remaining_files = file_count - current_file_index;
+            remaining_files = image_list_len - current_file_index;
         }
         
         montage_argv[montage_argc++] = "gif:-";
@@ -452,8 +452,8 @@ int main(int argc, char **argv) {
             free2(allocated_labels[i], strlen32(allocated_labels[i]) + 1);
             free2(allocated_urls[i], 1024);
         }
-        free2(allocated_labels, SIZEOF(char *) * file_count);
-        free2(allocated_urls, SIZEOF(char *) * file_count);
+        free2(allocated_labels, SIZEOF(char *) * image_list_len);
+        free2(allocated_urls, SIZEOF(char *) * image_list_len);
     }
     
     {
