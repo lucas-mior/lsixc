@@ -402,12 +402,12 @@ int main(int argc, char **argv) {
             int32 error_file_descriptor;
             
             XCLOSE(&pipe_descriptors[0]);
-            dup2(pipe_descriptors[1], STDOUT_FILENO);
+            xdup2(pipe_descriptors[1], STDOUT_FILENO);
             XCLOSE(&pipe_descriptors[1]);
             
             error_file_descriptor = open(temporary_error_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
             if (error_file_descriptor != -1) {
-                dup2(error_file_descriptor, STDERR_FILENO);
+                xdup2(error_file_descriptor, STDERR_FILENO);
                 XCLOSE(&error_file_descriptor);
             }
             
@@ -429,7 +429,7 @@ int main(int argc, char **argv) {
             char *sixel_argv[6];
             
             XCLOSE(&pipe_descriptors[1]);
-            dup2(pipe_descriptors[0], STDIN_FILENO);
+            xdup2(pipe_descriptors[0], STDIN_FILENO);
             XCLOSE(&pipe_descriptors[0]);
             
             SNPRINTF(num_colors_str, "%d", num_colors);
