@@ -37,8 +37,8 @@ read_term_response(char *sequence, char end_character, char *output_buffer) {
     struct timeval timeout;
     fd_set read_fds;
     int32 index = 0;
-    int32 sequence_length = strlen32(sequence);
-    write64(STDERR_FILENO, sequence, sequence_length);
+    int32 sequence_len = strlen32(sequence);
+    write64(STDERR_FILENO, sequence, sequence_len);
     
     while (1) {
         int32 selected;
@@ -54,7 +54,7 @@ read_term_response(char *sequence, char end_character, char *output_buffer) {
         selected = select(STDIN_FILENO + 1, &read_fds, NULL, NULL, &timeout);
         if (selected <= 0) {
             error("Terminal didnt answer for the sequence\n");
-            for (int32 i = 0; i < sequence_length; i += 1) {
+            for (int32 i = 0; i < sequence_len; i += 1) {
                 fprintf(stderr, "%c ", sequence[i]);
             }
             error("\n");
@@ -233,7 +233,7 @@ int main(int argc, char **argv) {
         
         while ((directory_entry = readdir(directory))) {
             char *filename = directory_entry->d_name;
-            int32 filename_length = strlen32(filename);
+            int32 filename_len = strlen32(filename);
             const char *mime_type;
             
             if ((mime_type = magic_file(magic_cookie, filename)) == NULL) {
@@ -242,7 +242,7 @@ int main(int argc, char **argv) {
 
             if (BEGINS_WITH((char *)mime_type, "image/")) {
                 file_list = realloc2(file_list, file_count, file_count + 1, SIZEOF(char *));
-                file_list[file_count] = malloc2(filename_length + 1);
+                file_list[file_count] = malloc2(filename_len + 1);
                 strcpy(file_list[file_count], filename);
                 file_count += 1;
             }
@@ -301,8 +301,8 @@ int main(int argc, char **argv) {
         montage_argv[montage_argc++] = "-shadow";
     }
     
-    int32 family_length = strlen32(font_family);
-    if (family_length > 0) {
+    int32 family_len = strlen32(font_family);
+    if (family_len > 0) {
         montage_argv[montage_argc++] = "-font";
         montage_argv[montage_argc++] = font_family;
     }
@@ -342,8 +342,8 @@ int main(int argc, char **argv) {
                 label_pointer += 1;
             }
             
-            int32 label_length = strlen32(label_pointer);
-            for (int32 i = 0; i < label_length; i += 1) {
+            int32 label_len = strlen32(label_pointer);
+            for (int32 i = 0; i < label_len; i += 1) {
                 int32 is_control_character = iscntrl((unsigned char)label_pointer[i]);
                 if (is_control_character) {
                     label_pointer[i] = '?';
@@ -356,16 +356,16 @@ int main(int argc, char **argv) {
             strcpy(file_url, "file://");
             strcat(file_url, current_file_name);
             
-            int32 name_length = strlen32(current_file_name);
-            if (name_length > 4) {
-                char *extension_gif = &current_file_name[name_length - 4];
+            int32 name_len = strlen32(current_file_name);
+            if (name_len > 4) {
+                char *extension_gif = &current_file_name[name_len - 4];
                 if (strcasecmp(extension_gif, ".gif") == 0) {
                     strcat(file_url, "[0]");
                 }
             }
             
-            if (name_length > 5) {
-                char *extension_webp = &current_file_name[name_length - 5];
+            if (name_len > 5) {
+                char *extension_webp = &current_file_name[name_len - 5];
                 if (strcasecmp(extension_webp, ".webp") == 0) {
                     strcat(file_url, "[0]");
                 }
