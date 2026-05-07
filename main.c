@@ -94,8 +94,7 @@ int main(int argc, char **argv) {
     int32 font_size = tile_width / 10;
     double timeout_seconds = 0.01;
     
-    char font_family[64];
-    strcpy(font_family, "Dejavu-Sans");
+    char *font_family = "Dejavu-Sans";
 
     tcgetattr(STDIN_FILENO, &original_terminal_attributes);
     
