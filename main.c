@@ -83,9 +83,9 @@ int main(int argc, char **argv) {
     pid_t check_pid = fork();
     if (check_pid == 0) {
         int32 dev_null_descriptor = open("/dev/null", O_WRONLY);
-        dup2(dev_null_descriptor, STDOUT_FILENO);
-        dup2(dev_null_descriptor, STDERR_FILENO);
-        close(dev_null_descriptor);
+        xdup2(dev_null_descriptor, STDOUT_FILENO);
+        xdup2(dev_null_descriptor, STDERR_FILENO);
+        XCLOSE(&dev_null_descriptor);
         execlp("sh", "sh", "-c", "command -v magick", (char *)NULL);
         exit(1);
     } else {
@@ -442,14 +442,14 @@ int main(int argc, char **argv) {
         
         pid_t montage_pid = fork();
         if (montage_pid == 0) {
-            close(pipe_descriptors[0]);
+            XCLOSE(&pipe_descriptors[0]);
             dup2(pipe_descriptors[1], STDOUT_FILENO);
-            close(pipe_descriptors[1]);
+            XCLOSE(&pipe_descriptors[1]);
             
             int32 error_file_descriptor = open(temporary_error_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
             if (error_file_descriptor != -1) {
                 dup2(error_file_descriptor, STDERR_FILENO);
-                close(error_file_descriptor);
+                XCLOSE(&error_file_descriptor);
             }
             
             execvp("magick", montage_argv);
@@ -458,9 +458,9 @@ int main(int argc, char **argv) {
         
         pid_t sixel_pid = fork();
         if (sixel_pid == 0) {
-            close(pipe_descriptors[1]);
+            XCLOSE(&pipe_descriptors[1]);
             dup2(pipe_descriptors[0], STDIN_FILENO);
-            close(pipe_descriptors[0]);
+            XCLOSE(&pipe_descriptors[0]);
             
             char num_colors_str[32];
             sprintf(num_colors_str, "%d", num_colors);
@@ -477,8 +477,8 @@ int main(int argc, char **argv) {
             exit(1);
         }
         
-        close(pipe_descriptors[0]);
-        close(pipe_descriptors[1]);
+        XCLOSE(&pipe_descriptors[0]);
+        XCLOSE(&pipe_descriptors[1]);
         
         waitpid(montage_pid, NULL, 0);
         waitpid(sixel_pid, NULL, 0);
