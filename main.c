@@ -298,7 +298,9 @@ int main(int argc, char **argv) {
     montage_argv[montage_argc++] = tile_arg;
     
     char geometry_arg[128];
-    SNPRINTF(geometry_arg, "%dx%d>+%d+%d", tile_width, tile_height, tile_x_space, tile_y_space);
+    SNPRINTF(geometry_arg,
+             "%dx%d>+%d+%d",
+             tile_width, tile_height, tile_x_space, tile_y_space);
     montage_argv[montage_argc++] = "-geometry";
     montage_argv[montage_argc++] = geometry_arg;
     
