@@ -321,6 +321,9 @@ int main(int argc, char **argv) {
         int32 alloc_count;
         int32 goal;
         int32 remaining_files;
+        int32 pipes[2];
+        pid_t montage_pid;
+
         montage_argc = base_argc;
         
         if ((goal = image_list_len - num_tiles) < 0) {
@@ -388,10 +391,8 @@ int main(int argc, char **argv) {
         montage_argv[montage_argc++] = "gif:-";
         montage_argv[montage_argc++] = NULL;
         
-        int32 pipes[2];
         xpipe(pipes);
         
-        pid_t montage_pid;
         switch (montage_pid = fork()) {
         case -1:
             error("Error forking: %s\n", strerror(errno));
