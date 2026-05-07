@@ -38,7 +38,6 @@ read_terminal_response(char *sequence, char end_character,
     int32 sequence_length = strlen32(sequence);
     write64(STDERR_FILENO, sequence, sequence_length);
     
-    
     while (1) {
         int32 select_result;
         char current_character;
