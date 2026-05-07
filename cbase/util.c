@@ -1510,6 +1510,28 @@ print_timings(char *file, int32 line, char *func,
     return;
 }
 
+static void
+catfile(int where, char *file) {
+    int fd;
+    char buffer[4096];
+    int64 r;
+
+    if ((fd = open(file, O_RDONLY)) < 0) {
+        error("Error opening %s: %s.\n", file, strerror(errno));
+        fatal(EXIT_FAILURE);
+    }
+
+    printf("\n");
+    while ((r = read64(fd, buffer, SIZEOF(buffer))) > 0) {
+        write_all(where, buffer, r);
+    }
+    if (r < 0) {
+        error("Error reading %s: %s.\n", file, strerror(errno));
+        fatal(EXIT_FAILURE);
+    }
+    return;
+}
+
 #if OS_UNIX
 
 #define XSIGNAL(NAME) [NAME] = #NAME

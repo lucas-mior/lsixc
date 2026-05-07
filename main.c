@@ -471,24 +471,7 @@ int main(int argc, char **argv) {
         free2(allocated_urls, image_list_len*SIZEOF(*allocated_urls));
     }
     
-    {
-        int fd;
-        char buffer[4096];
-        int64 r;
-
-        if ((fd = open(error_file, O_RDONLY)) < 0) {
-            error("Error opening %s: %s.\n", error_file, strerror(errno));
-            fatal(EXIT_FAILURE);
-        }
-
-        printf("\n");
-        while ((r = read64(fd, buffer, SIZEOF(buffer))) > 0) {
-            write_all(STDERR_FILENO, buffer, r);
-        }
-        if (r < 0) {
-            error("Error reading %s: %s.\n", error_file, strerror(errno));
-        }
-    }
+    catfile(STDERR_FILENO, error_file);
 
     read_term_response("\033[c", 'c', term_reply);
 
