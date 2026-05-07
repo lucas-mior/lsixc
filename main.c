@@ -103,6 +103,8 @@ int main(int argc, char **argv) {
     int32 tile_width = tile_size;
     int32 tile_height = tile_size;
     int32 font_size = tile_width / 10;
+
+    int32 parsed_colors = 0;
     
     char *font_family = "Dejavu-Sans";
 
@@ -145,9 +147,7 @@ int main(int argc, char **argv) {
 
     read_term_response("\033[?1;1;0S", 'S', term_reply);
     
-    int32 parsed_colors = 0;
-    int32 scan_result = sscanf(term_reply, "\033[?1;0;%dS", &parsed_colors);
-    if (scan_result == 1) {
+    if (sscanf(term_reply, "\033[?1;0;%dS", &parsed_colors) == 1) {
         num_colors = parsed_colors;
     }
 
@@ -164,8 +164,7 @@ int main(int argc, char **argv) {
 
     if (num_colors < 256) {
         read_term_response("\033[?1;3;256S", 'S', term_reply);
-        scan_result = sscanf(term_reply, "\033[?1;0;%dS", &parsed_colors);
-        if (scan_result == 1) {
+        if (sscanf(term_reply, "\033[?1;0;%dS", &parsed_colors) == 1) {
             num_colors = parsed_colors;
         }
     }
@@ -176,15 +175,13 @@ int main(int argc, char **argv) {
     
     {
         int32 parsed_width = 0;
-        scan_result = sscanf(term_reply, "\033[?2;1;%dS", &parsed_width);
-        if (scan_result == 1) {
+        if (sscanf(term_reply, "\033[?2;1;%dS", &parsed_width) == 1) {
             if (parsed_width > 0) {
                 screen_width = parsed_width;
             }
         } else {
             read_term_response("\033[14t", 't', term_reply);
-            scan_result = sscanf(term_reply, "\033[4;%d;%dt", &parsed_colors, &parsed_width);
-            if (scan_result == 2) {
+            if (sscanf(term_reply, "\033[4;%d;%dt", &parsed_colors, &parsed_width) == 2) {
                 if (parsed_width > 0) {
                     screen_width = parsed_width;
                 }
