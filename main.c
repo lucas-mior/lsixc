@@ -239,7 +239,7 @@ int main(int argc, char **argv) {
             }
 
             if (BEGINS_WITH((char *)mime_type, "image/")) {
-                image_list = realloc2(image_list, image_list_len, image_list_len + 1, SIZEOF(char *));
+                image_list = realloc2(image_list, image_list_len, image_list_len + 1, SIZEOF(*image_list));
                 image_list[image_list_len] = malloc2(filename_len + 1);
                 strcpy(image_list[image_list_len], filename);
                 image_list_len += 1;
@@ -249,7 +249,7 @@ int main(int argc, char **argv) {
         magic_close(magic_cookie);
         closedir(directory);
         
-        qsort64(image_list, image_list_len, SIZEOF(char *), compare_strings);
+        qsort64(image_list, image_list_len, SIZEOF(*image_list), compare_strings);
     } else {
         for (int32 i = 1; i < argc; i += 1) {
             struct stat path_status;
@@ -259,7 +259,7 @@ int main(int argc, char **argv) {
                 continue;
             } else {
                 int32 arg_len = strlen32(argv[i]);
-                image_list = realloc2(image_list, image_list_len, image_list_len + 1, SIZEOF(char *));
+                image_list = realloc2(image_list, image_list_len, image_list_len + 1, SIZEOF(*image_list));
                 image_list[image_list_len] = malloc2(arg_len + 1);
                 strcpy(image_list[image_list_len], argv[i]);
                 image_list_len += 1;
@@ -331,8 +331,8 @@ int main(int argc, char **argv) {
             goal = 0;
         }
         
-        allocated_labels = malloc2(SIZEOF(char *)*image_list_len);
-        allocated_urls = malloc2(SIZEOF(char *)*image_list_len);
+        allocated_labels = malloc2(image_list_len*SIZEOF(*allocated_labels));
+        allocated_urls = malloc2(image_list_len*SIZEOF(*allocated_urls));
         alloc_count = 0;
         
         remaining_files = image_list_len - current_file_index;
