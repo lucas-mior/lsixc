@@ -213,7 +213,6 @@ int main(int argc, char **argv) {
         DIR *directory;
         magic_t magic_cookie;
         int32 magic_load_result;
-        struct dirent *directory_entry;
 
         if ((directory = opendir(".")) == NULL) {
             error("Error opening current directory: %s.\n", strerror(errno));
@@ -232,7 +231,7 @@ int main(int argc, char **argv) {
         }
         
         while (1) {
-            directory_entry = readdir(directory);
+            struct dirent *directory_entry = readdir(directory);
             if (directory_entry == NULL) {
                 break;
             }
