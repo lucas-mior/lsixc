@@ -330,31 +330,34 @@ int main(int argc, char **argv) {
         int32 remaining_files = image_list_len - current_file_index;
         while (current_file_index < image_list_len && remaining_files > goal) {
             char *current_file_name = image_list[current_file_index];
+            char *label_pointer;
+            int32 label_len;
+            char *file_url;
+            int32 name_len;
             
             char *processed_label = malloc2(strlen32(current_file_name) + 1);
             strcpy(processed_label, current_file_name);
             allocated_labels[alloc_count] = processed_label;
             
-            char *label_pointer = processed_label;
+            label_pointer = processed_label;
             if (label_pointer[0] == ':') {
                 label_pointer += 1;
             }
             
-            int32 label_len = strlen32(label_pointer);
+            label_len = strlen32(label_pointer);
             for (int32 i = 0; i < label_len; i += 1) {
-                int32 is_control_character = iscntrl((unsigned char)label_pointer[i]);
-                if (is_control_character) {
+                if (iscntrl((unsigned char)label_pointer[i])) {
                     label_pointer[i] = '?';
                 }
             }
             
-            char *file_url = malloc2(1024);
+            file_url = malloc2(1024);
             allocated_urls[alloc_count] = file_url;
             
             strcpy(file_url, "file://");
             strcat(file_url, current_file_name);
             
-            int32 name_len = strlen32(current_file_name);
+            name_len = strlen32(current_file_name);
             if (name_len > 4) {
                 char *extension_gif = &current_file_name[name_len - 4];
                 if (strcasecmp(extension_gif, ".gif") == 0) {
