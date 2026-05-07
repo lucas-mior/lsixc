@@ -14,6 +14,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <magic.h>
 
 #include "util.c"
 #define MEMORY_CHECK_USE_AFTER_FREE 0
@@ -112,7 +113,7 @@ int main(int argc, char **argv) {
     tcsetattr(STDIN_FILENO, TCSANOW, &raw_terminal_attrs);
 
     char terminal_reply[256];
-    read_terminal_response("\033[c", 'c', 1.0, terminal_reply, sizeof(terminal_reply));
+    read_terminal_response("\033[c", 'c', 1.0, terminal_reply, SIZEOF(terminal_reply));
     
     bool has_sixel = false;
     char *force_sixel = getenv("LSIX_FORCE_SIXEL_SUPPORT");
@@ -136,7 +137,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    read_terminal_response("\033[?1;1;0S", 'S', timeout_seconds, terminal_reply, sizeof(terminal_reply));
+    read_terminal_response("\033[?1;1;0S", 'S', timeout_seconds, terminal_reply, SIZEOF(terminal_reply));
     
     int32 parsed_colors = 0;
     int32 scan_result = sscanf(terminal_reply, "\033[?1;0;%dS", &parsed_colors);
@@ -153,14 +154,14 @@ int main(int argc, char **argv) {
     }
 
     if (num_colors < 256) {
-        read_terminal_response("\033[?1;3;256S", 'S', timeout_seconds, terminal_reply, sizeof(terminal_reply));
+        read_terminal_response("\033[?1;3;256S", 'S', timeout_seconds, terminal_reply, SIZEOF(terminal_reply));
         scan_result = sscanf(terminal_reply, "\033[?1;0;%dS", &parsed_colors);
         if (scan_result == 1) {
             num_colors = parsed_colors;
         }
     }
 
-    read_terminal_response("\033]11;?\033\\", '\\', timeout_seconds, terminal_reply, sizeof(terminal_reply));
+    read_terminal_response("\033]11;?\033\\", '\\', timeout_seconds, terminal_reply, SIZEOF(terminal_reply));
     
     if (terminal_environment != NULL) {
         int32 compare_yaft_result = strncmp(terminal_environment, "yaft", 4);
@@ -170,7 +171,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    read_terminal_response("\033[?2;1;0S", 'S', timeout_seconds, terminal_reply, sizeof(terminal_reply));
+    read_terminal_response("\033[?2;1;0S", 'S', timeout_seconds, terminal_reply, SIZEOF(terminal_reply));
     
     int32 parsed_width = 0;
     scan_result = sscanf(terminal_reply, "\033[?2;1;%dS", &parsed_width);
@@ -179,7 +180,7 @@ int main(int argc, char **argv) {
             screen_width = parsed_width;
         }
     } else {
-        read_terminal_response("\033[14t", 't', timeout_seconds, terminal_reply, sizeof(terminal_reply));
+        read_terminal_response("\033[14t", 't', timeout_seconds, terminal_reply, SIZEOF(terminal_reply));
         scan_result = sscanf(terminal_reply, "\033[4;%d;%dt", &parsed_colors, &parsed_width);
         if (scan_result == 2) {
             if (parsed_width > 0) {
@@ -212,7 +213,21 @@ int main(int argc, char **argv) {
     if (argc == 1) {
         DIR *directory_pointer = opendir(".");
         if (directory_pointer != NULL) {
+            magic_t magic_cookie = magic_open(MAGIC_MIME_TYPE);
+            int32 magic_load_result;
             struct dirent *directory_entry;
+            
+            if (magic_cookie == NULL) {
+                error("Error initializing magic library\n");
+                fatal(EXIT_FAILURE);
+            }
+            
+            magic_load_result = magic_load(magic_cookie, NULL);
+            if (magic_load_result != 0) {
+                error("Error loading magic database: %s\n", (char *)magic_error(magic_cookie));
+                fatal(EXIT_FAILURE);
+            }
+            
             while (1) {
                 directory_entry = readdir(directory_pointer);
                 if (directory_entry == NULL) {
@@ -221,37 +236,28 @@ int main(int argc, char **argv) {
                 
                 char *filename = directory_entry->d_name;
                 int32 filename_length = strlen32(filename);
+                int32 is_image_file = 0;
+                char *mime_type = (char *)magic_file(magic_cookie, filename);
                 
-                if (filename_length > 4) {
-                    char *extension_four_chars = &filename[filename_length - 4];
-                    int32 is_image_file = 0;
-                    
-                    if (strcasecmp(extension_four_chars, ".jpg") == 0) {
+                if (mime_type != NULL) {
+                    int32 compare_result = strncmp(mime_type, "image/", 6);
+                    if (compare_result == 0) {
                         is_image_file = 1;
-                    } else if (strcasecmp(extension_four_chars, ".png") == 0) {
-                        is_image_file = 1;
-                    } else if (strcasecmp(extension_four_chars, ".gif") == 0) {
-                        is_image_file = 1;
-                    } else if (filename_length > 5) {
-                        char *extension_five_chars = &filename[filename_length - 5];
-                        if (strcasecmp(extension_five_chars, ".webp") == 0) {
-                            is_image_file = 1;
-                        } else if (strcasecmp(extension_five_chars, ".jpeg") == 0) {
-                            is_image_file = 1;
-                        }
-                    }
-                    
-                    if (is_image_file == 1) {
-                        file_list = realloc2(file_list, file_count, file_count + 1, sizeof(char *));
-                        file_list[file_count] = malloc2(filename_length + 1);
-                        strcpy(file_list[file_count], filename);
-                        file_count += 1;
                     }
                 }
+                
+                if (is_image_file == 1) {
+                    file_list = realloc2(file_list, file_count, file_count + 1, SIZEOF(char *));
+                    file_list[file_count] = malloc2(filename_length + 1);
+                    strcpy(file_list[file_count], filename);
+                    file_count += 1;
+                }
             }
+            
+            magic_close(magic_cookie);
             closedir(directory_pointer);
             
-            qsort(file_list, file_count, sizeof(char *), compare_strings);
+            qsort(file_list, file_count, SIZEOF(char *), compare_strings);
         }
     } else {
         for (int32 i = 1; i < argc; i += 1) {
@@ -262,7 +268,7 @@ int main(int argc, char **argv) {
                 continue;
             } else {
                 int32 arg_len = strlen32(argv[i]);
-                file_list = realloc2(file_list, file_count, file_count + 1, sizeof(char *));
+                file_list = realloc2(file_list, file_count, file_count + 1, SIZEOF(char *));
                 file_list[file_count] = malloc2(arg_len + 1);
                 strcpy(file_list[file_count], argv[i]);
                 file_count += 1;
@@ -326,8 +332,8 @@ int main(int argc, char **argv) {
             goal = 0;
         }
         
-        char **allocated_labels = malloc2(sizeof(char *) * file_count);
-        char **allocated_urls = malloc2(sizeof(char *) * file_count);
+        char **allocated_labels = malloc2(SIZEOF(char *) * file_count);
+        char **allocated_urls = malloc2(SIZEOF(char *) * file_count);
         int32 alloc_count = 0;
         
         int32 remaining_files = file_count - current_file_index;
@@ -453,8 +459,8 @@ int main(int argc, char **argv) {
             free2(allocated_labels[i], strlen32(allocated_labels[i]) + 1);
             free2(allocated_urls[i], 1024);
         }
-        free2(allocated_labels, sizeof(char *) * file_count);
-        free2(allocated_urls, sizeof(char *) * file_count);
+        free2(allocated_labels, SIZEOF(char *) * file_count);
+        free2(allocated_urls, SIZEOF(char *) * file_count);
     }
     
     pid_t cat_pid;
@@ -471,7 +477,7 @@ int main(int argc, char **argv) {
         break;
     }
 
-    read_terminal_response("\033[c", 'c', 60.0, terminal_reply, sizeof(terminal_reply));
+    read_terminal_response("\033[c", 'c', 60.0, terminal_reply, SIZEOF(terminal_reply));
 
     cleanup(0);
     memory_check();
