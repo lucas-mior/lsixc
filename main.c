@@ -35,7 +35,7 @@ static int32
 read_term_response(char *sequence, char end_character, char *output_buffer) {
     static double timeout_seconds = 0.01;
     struct timeval timeout;
-    fd_set read_file_descriptors;
+    fd_set read_fds;
     int32 index = 0;
     int32 sequence_length = strlen32(sequence);
     write64(STDERR_FILENO, sequence, sequence_length);
@@ -48,10 +48,10 @@ read_term_response(char *sequence, char end_character, char *output_buffer) {
         timeout.tv_sec = (int32)timeout_seconds;
         timeout.tv_usec = (int32)((timeout_seconds - (int32)timeout_seconds) * 1000000);
         
-        FD_ZERO(&read_file_descriptors);
-        FD_SET(STDIN_FILENO, &read_file_descriptors);
+        FD_ZERO(&read_fds);
+        FD_SET(STDIN_FILENO, &read_fds);
         
-        selected = select(STDIN_FILENO + 1, &read_file_descriptors, NULL, NULL, &timeout);
+        selected = select(STDIN_FILENO + 1, &read_fds, NULL, NULL, &timeout);
         if (selected <= 0) {
             error("Terminal didnt answer for the sequence\n");
             for (int32 i = 0; i < sequence_length; i += 1) {
@@ -398,16 +398,16 @@ int main(int argc, char **argv) {
             error("Error forking: %s\n", strerror(errno));
             fatal(EXIT_FAILURE);
         case 0: {
-            int32 error_file_descriptor;
+            int32 error_fd;
             
             XCLOSE(&pipe_descriptors[0]);
             xdup2(pipe_descriptors[1], STDOUT_FILENO);
             XCLOSE(&pipe_descriptors[1]);
             
-            error_file_descriptor = open(temporary_error_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
-            if (error_file_descriptor != -1) {
-                xdup2(error_file_descriptor, STDERR_FILENO);
-                XCLOSE(&error_file_descriptor);
+            error_fd = open(temporary_error_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+            if (error_fd != -1) {
+                xdup2(error_fd, STDERR_FILENO);
+                XCLOSE(&error_fd);
             }
             
             execvp("magick", montage_argv);
