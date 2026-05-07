@@ -31,6 +31,11 @@ cleanup(int signal_number) {
     exit(EXIT_SUCCESS);
 }
 
+typedef struct FileName {
+    char *name;
+    int32 len;
+} FileName;
+
 static int32
 read_term_response(char *sequence, char end_character, char *output_buffer) {
     static double timeout_seconds = 0.01;
