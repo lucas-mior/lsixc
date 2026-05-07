@@ -210,8 +210,8 @@ int main(int argc, char **argv) {
     int32 file_count = 0;
 
     if (argc == 1) {
-        DIR *directory_pointer = opendir(".");
-        if (directory_pointer != NULL) {
+        DIR *directory = opendir(".");
+        if (directory != NULL) {
             magic_t magic_cookie = magic_open(MAGIC_MIME_TYPE);
             int32 magic_load_result;
             struct dirent *directory_entry;
@@ -228,7 +228,7 @@ int main(int argc, char **argv) {
             }
             
             while (1) {
-                directory_entry = readdir(directory_pointer);
+                directory_entry = readdir(directory);
                 if (directory_entry == NULL) {
                     break;
                 }
@@ -254,7 +254,7 @@ int main(int argc, char **argv) {
             }
             
             magic_close(magic_cookie);
-            closedir(directory_pointer);
+            closedir(directory);
             
             qsort(file_list, file_count, SIZEOF(char *), compare_strings);
         }
