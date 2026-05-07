@@ -205,7 +205,7 @@ int main(int argc, char **argv) {
 
     char temporary_error_file[256];
     int32 current_time = (int32)time(NULL);
-    sprintf(temporary_error_file, "/tmp/lsix-%d.error", current_time);
+    SNPRINTF(temporary_error_file, "/tmp/lsix-%d.error", current_time);
 
     char **file_list = NULL;
     int32 file_count = 0;
@@ -287,12 +287,12 @@ int main(int argc, char **argv) {
     montage_argv[montage_argc++] = "montage";
     
     char tile_arg[64];
-    sprintf(tile_arg, "%dx1", num_tiles);
+    SNPRINTF(tile_arg, "%dx1", num_tiles);
     montage_argv[montage_argc++] = "-tile";
     montage_argv[montage_argc++] = tile_arg;
     
     char geometry_arg[128];
-    sprintf(geometry_arg, "%dx%d>+%d+%d", tile_width, tile_height, tile_x_space, tile_y_space);
+    SNPRINTF(geometry_arg, "%dx%d>+%d+%d", tile_width, tile_height, tile_x_space, tile_y_space);
     montage_argv[montage_argc++] = "-geometry";
     montage_argv[montage_argc++] = geometry_arg;
     
@@ -316,7 +316,7 @@ int main(int argc, char **argv) {
     
     char font_size_string[64];
     if (font_size > 0) {
-        sprintf(font_size_string, "%d", font_size);
+        SNPRINTF(font_size_string, "%d", font_size);
         montage_argv[montage_argc++] = "-pointsize";
         montage_argv[montage_argc++] = font_size_string;
     }
@@ -432,7 +432,7 @@ int main(int argc, char **argv) {
             dup2(pipe_descriptors[0], STDIN_FILENO);
             XCLOSE(&pipe_descriptors[0]);
             
-            sprintf(num_colors_str, "%d", num_colors);
+            SNPRINTF(num_colors_str, "%d", num_colors);
             
             sixel_argv[0] = "magick";
             sixel_argv[1] = "-";
