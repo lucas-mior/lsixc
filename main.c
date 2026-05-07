@@ -174,18 +174,20 @@ int main(int argc, char **argv) {
     
     read_term_response("\033[?2;1;0S", 'S', term_reply);
     
-    int32 parsed_width = 0;
-    scan_result = sscanf(term_reply, "\033[?2;1;%dS", &parsed_width);
-    if (scan_result == 1) {
-        if (parsed_width > 0) {
-            screen_width = parsed_width;
-        }
-    } else {
-        read_term_response("\033[14t", 't', term_reply);
-        scan_result = sscanf(term_reply, "\033[4;%d;%dt", &parsed_colors, &parsed_width);
-        if (scan_result == 2) {
+    {
+        int32 parsed_width = 0;
+        scan_result = sscanf(term_reply, "\033[?2;1;%dS", &parsed_width);
+        if (scan_result == 1) {
             if (parsed_width > 0) {
                 screen_width = parsed_width;
+            }
+        } else {
+            read_term_response("\033[14t", 't', term_reply);
+            scan_result = sscanf(term_reply, "\033[4;%d;%dt", &parsed_colors, &parsed_width);
+            if (scan_result == 2) {
+                if (parsed_width > 0) {
+                    screen_width = parsed_width;
+                }
             }
         }
     }
