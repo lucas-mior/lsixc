@@ -118,12 +118,15 @@ int main(int argc, char **argv) {
     int32 width_denominator = tile_width + 2*tile_x_space + 1;
     int32 num_tiles = screen_width / width_denominator;
 
-    char error_file[256];
-    int32 current_time = (int32)time(NULL);
-    SNPRINTF(error_file, "/tmp/lsix-%d.error", current_time);
+    char error_file[] = "/tmp/lsixc-XXXXXX";
 
     FileName *image_list = NULL;
     int32 image_list_len = 0;
+
+    if (mkstemp(error_file) < 0) {
+        error("Error in mkstemp: %s.\n", strerror(errno));
+        fatal(EXIT_FAILURE);
+    }
 
     signal(SIGINT, cleanup);
     signal(SIGHUP, cleanup);
