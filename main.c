@@ -75,6 +75,14 @@ read_terminal_response(char *sequence, char end_character,
     return index;
 }
 
+static int32
+compare_strings(const void *a, const void *b) {
+    char **string_a = (char **)a;
+    char **string_b = (char **)b;
+    
+    return strcmp(*string_a, *string_b);
+}
+
 int main(int argc, char **argv) {
     signal(SIGINT, cleanup);
     signal(SIGHUP, cleanup);
@@ -243,17 +251,7 @@ int main(int argc, char **argv) {
             }
             closedir(directory_pointer);
             
-            for (int32 i = 0; i < file_count - 1; i += 1) {
-                int32 sorting_limit = file_count - i - 1;
-                for (int32 j = 0; j < sorting_limit; j += 1) {
-                    int32 compare_value = strcmp(file_list[j], file_list[j + 1]);
-                    if (compare_value > 0) {
-                        char *temporary_swap = file_list[j];
-                        file_list[j] = file_list[j + 1];
-                        file_list[j + 1] = temporary_swap;
-                    }
-                }
-            }
+            qsort(file_list, file_count, sizeof(char *), compare_strings);
         }
     } else {
         for (int32 i = 1; i < argc; i += 1) {
