@@ -316,18 +316,22 @@ int main(int argc, char **argv) {
     int32 current_file_index = 0;
     
     while (current_file_index < image_list_len) {
+        char **allocated_labels;
+        char **allocated_urls;
+        int32 alloc_count;
+        int32 goal;
+        int32 remaining_files;
         montage_argc = base_argc;
         
-        int32 goal = image_list_len - num_tiles;
-        if (goal < 0) {
+        if ((goal = image_list_len - num_tiles) < 0) {
             goal = 0;
         }
         
-        char **allocated_labels = malloc2(SIZEOF(char *) * image_list_len);
-        char **allocated_urls = malloc2(SIZEOF(char *) * image_list_len);
-        int32 alloc_count = 0;
+        allocated_labels = malloc2(SIZEOF(char *) * image_list_len);
+        allocated_urls = malloc2(SIZEOF(char *) * image_list_len);
+        alloc_count = 0;
         
-        int32 remaining_files = image_list_len - current_file_index;
+        remaining_files = image_list_len - current_file_index;
         while (current_file_index < image_list_len && remaining_files > goal) {
             char *current_file_name = image_list[current_file_index];
             char *label_pointer;
