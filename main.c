@@ -480,7 +480,7 @@ int main(int argc, char **argv) {
 
     read_term_response("\033[c", 'c', term_reply);
 
-    cleanup(0);
     memory_check();
+    cleanup(0);
     return 0;
 }
