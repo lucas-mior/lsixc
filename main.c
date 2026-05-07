@@ -18,7 +18,7 @@
 
 static struct termios original_terminal_attributes;
 
-static void
+static void __attribute((noreturn))
 cleanup(int signal_number) {
     (void)signal_number;
     tcsetattr(STDIN_FILENO, TCSANOW, &original_terminal_attributes);
@@ -39,19 +39,22 @@ read_terminal_response(char *sequence, char end_character,
     
     
     while (1) {
+        int32 select_result;
+        char current_character;
+        int64 read_bytes;
+
         timeout.tv_sec = (int32)timeout_seconds;
         timeout.tv_usec = (int32)((timeout_seconds - (int32)timeout_seconds) * 1000000);
         
         FD_ZERO(&read_file_descriptors);
         FD_SET(STDIN_FILENO, &read_file_descriptors);
         
-        int32 select_result = select(STDIN_FILENO + 1, &read_file_descriptors, NULL, NULL, &timeout);
+        select_result = select(STDIN_FILENO + 1, &read_file_descriptors, NULL, NULL, &timeout);
         if (select_result <= 0) {
             break;
         }
         
-        char current_character;
-        int32 read_bytes = read(STDIN_FILENO, &current_character, 1);
+        read_bytes = read(STDIN_FILENO, &current_character, 1);
         if (read_bytes <= 0) {
             break;
         }
@@ -71,11 +74,12 @@ read_terminal_response(char *sequence, char end_character,
 }
 
 int main(int argc, char **argv) {
+    int32 system_status = -1;
+
     signal(SIGINT, cleanup);
     signal(SIGHUP, cleanup);
     signal(SIGABRT, cleanup);
 
-    int32 system_status = -1;
     pid_t check_pid = fork();
     if (check_pid == 0) {
         int32 dev_null_descriptor = open("/dev/null", O_WRONLY);
