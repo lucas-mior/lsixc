@@ -294,58 +294,42 @@ int main(int argc, char **argv) {
     char *montage_argv[10000];
     int32 montage_argc = 0;
     
-    montage_argv[montage_argc] = "magick";
-    montage_argc += 1;
-    montage_argv[montage_argc] = "montage";
-    montage_argc += 1;
+    montage_argv[montage_argc++] = "magick";
+    montage_argv[montage_argc++] = "montage";
     
     char tile_arg[64];
     sprintf(tile_arg, "%dx1", num_tiles);
-    montage_argv[montage_argc] = "-tile";
-    montage_argc += 1;
-    montage_argv[montage_argc] = tile_arg;
-    montage_argc += 1;
+    montage_argv[montage_argc++] = "-tile";
+    montage_argv[montage_argc++] = tile_arg;
     
     char geometry_arg[128];
     sprintf(geometry_arg, "%dx%d>+%d+%d", tile_width, tile_height, tile_x_space, tile_y_space);
-    montage_argv[montage_argc] = "-geometry";
-    montage_argc += 1;
-    montage_argv[montage_argc] = geometry_arg;
-    montage_argc += 1;
+    montage_argv[montage_argc++] = "-geometry";
+    montage_argv[montage_argc++] = geometry_arg;
     
-    montage_argv[montage_argc] = "-background";
-    montage_argc += 1;
-    montage_argv[montage_argc] = background;
-    montage_argc += 1;
+    montage_argv[montage_argc++] = "-background";
+    montage_argv[montage_argc++] = background;
     
-    montage_argv[montage_argc] = "-fill";
-    montage_argc += 1;
-    montage_argv[montage_argc] = foreground;
-    montage_argc += 1;
+    montage_argv[montage_argc++] = "-fill";
+    montage_argv[montage_argc++] = foreground;
     
-    montage_argv[montage_argc] = "-auto-orient";
-    montage_argc += 1;
+    montage_argv[montage_argc++] = "-auto-orient";
     
     if (num_colors > 16) {
-        montage_argv[montage_argc] = "-shadow";
-        montage_argc += 1;
+        montage_argv[montage_argc++] = "-shadow";
     }
     
     int32 family_length = strlen32(font_family);
     if (family_length > 0) {
-        montage_argv[montage_argc] = "-font";
-        montage_argc += 1;
-        montage_argv[montage_argc] = font_family;
-        montage_argc += 1;
+        montage_argv[montage_argc++] = "-font";
+        montage_argv[montage_argc++] = font_family;
     }
     
     char font_size_string[64];
     if (font_size > 0) {
         sprintf(font_size_string, "%d", font_size);
-        montage_argv[montage_argc] = "-pointsize";
-        montage_argc += 1;
-        montage_argv[montage_argc] = font_size_string;
-        montage_argc += 1;
+        montage_argv[montage_argc++] = "-pointsize";
+        montage_argv[montage_argc++] = font_size_string;
     }
 
     int32 base_argc = montage_argc;
@@ -405,21 +389,17 @@ int main(int argc, char **argv) {
                 }
             }
             
-            montage_argv[montage_argc] = "-label";
-            montage_argc += 1;
-            montage_argv[montage_argc] = label_pointer;
-            montage_argc += 1;
-            montage_argv[montage_argc] = file_url;
-            montage_argc += 1;
+            montage_argv[montage_argc++] = "-label";
+            montage_argv[montage_argc++] = label_pointer;
+            montage_argv[montage_argc++] = file_url;
             
             alloc_count += 1;
             current_file_index += 1;
             remaining_files = file_count - current_file_index;
         }
         
-        montage_argv[montage_argc] = "gif:-";
-        montage_argc += 1;
-        montage_argv[montage_argc] = NULL;
+        montage_argv[montage_argc++] = "gif:-";
+        montage_argv[montage_argc++] = NULL;
         
         int32 pipe_descriptors[2];
         pipe(pipe_descriptors);
