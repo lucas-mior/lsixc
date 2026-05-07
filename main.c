@@ -145,12 +145,18 @@ int main(int argc, char **argv) {
         num_colors = parsed_colors;
     }
 
-    char *TERM = getenv("TERM");
-    if (TERM != NULL) {
-        int32 compare_yaft_result = strncmp(TERM, "yaft", 4);
-        if (compare_yaft_result == 0) {
-            num_colors = 256;
-        }
+    char *TERM;
+
+    if ((TERM = getenv("TERM")) == NULL) {
+        error("TERM environment variable is not set.\n");
+        fatal(EXIT_FAILURE);
+    }
+
+    int32 compare_yaft_result = strncmp(TERM, "yaft", 4);
+    if (compare_yaft_result == 0) {
+        num_colors = 256;
+        strcpy(background, "black");
+        strcpy(foreground, "white");
     }
 
     if (num_colors < 256) {
@@ -163,14 +169,6 @@ int main(int argc, char **argv) {
 
     read_terminal_response("\033]11;?\033\\", '\\', timeout_seconds, terminal_reply, SIZEOF(terminal_reply));
     
-    if (TERM != NULL) {
-        int32 compare_yaft_result = strncmp(TERM, "yaft", 4);
-        if (compare_yaft_result == 0) {
-            strcpy(background, "black");
-            strcpy(foreground, "white");
-        }
-    }
-
     read_terminal_response("\033[?2;1;0S", 'S', timeout_seconds, terminal_reply, SIZEOF(terminal_reply));
     
     int32 parsed_width = 0;
@@ -189,12 +187,10 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (TERM != NULL) {
-        char *find_xterm = strstr(TERM, "xterm");
-        if (find_xterm != NULL) {
-            if (screen_width >= 1000) {
-                screen_width = 1000;
-            }
+    char *find_xterm = strstr(TERM, "xterm");
+    if (find_xterm != NULL) {
+        if (screen_width >= 1000) {
+            screen_width = 1000;
         }
     }
 
