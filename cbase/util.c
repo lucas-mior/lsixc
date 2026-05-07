@@ -246,6 +246,26 @@ begins_with(char *string, char *literal, int32 length) {
         begins_with(LONG, SHORT, LEN)
 #define BEGINS_WITH(...) SELECT_ON_NUM_ARGS(BEGINS_WITH_, __VA_ARGS__)
 
+INLINE char *
+ends_with(char *string, char *literal, int32 length) {
+    int32 string_len = strlen32(string);
+    if (string_len < length) {
+        return NULL;
+    }
+    string += (string_len - length);
+    if (strncmp32(literal, string, length) == 0) {
+        return string;
+    } else {
+        return NULL;
+    }
+}
+
+#define ENDS_WITH_2(LONG, SHORT) \
+        ends_with(LONG, SHORT, strlen32(SHORT))
+#define ENDS_WITH_3(LONG, SHORT, LEN) \
+        ends_with(LONG, SHORT, LEN)
+#define ENDS_WITH(...) SELECT_ON_NUM_ARGS(ENDS_WITH_, __VA_ARGS__)
+
 INLINE int
 memcmp64(void *left, void *right, int64 size) {
     int result;

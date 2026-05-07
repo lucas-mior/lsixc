@@ -276,7 +276,7 @@ int main(int argc, char **argv) {
             }
 
             list = realloc2(list, list_len, list_len + 1, SIZEOF(*list));
-            list[list_len].name = malloc2(path_len + 1);
+            list[list_len].name = malloc2(path_len + strlen32(index0) + 1);
             strcpy(list[list_len].name, path);
             list[list_len].len = path_len;
             list_len += 1;
@@ -350,18 +350,12 @@ int main(int argc, char **argv) {
             char *path = list[current_file_index].name;
             int32 path_len = list[current_file_index].len;
             
-            if (path_len > 4) {
-                char *extension_gif = &path[path_len - 4];
-                if (strcasecmp(extension_gif, ".gif") == 0) {
-                    memcpy64(path + path_len, index0, strlen32(index0));
-                }
+            if (ENDS_WITH(path, ".gif")) {
+                memcpy64(path + path_len, index0, strlen32(index0) + 1);
             }
             
-            if (path_len > 5) {
-                char *extension_webp = &path[path_len - 5];
-                if (strcasecmp(extension_webp, ".webp") == 0) {
-                    memcpy64(path + path_len, index0, strlen32(index0));
-                }
+            if (ENDS_WITH(path, ".webp")) {
+                memcpy64(path + path_len, index0, strlen32(index0) + 1);
             }
             
             montage_argv[montage_argc++] = "-label";
