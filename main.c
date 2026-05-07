@@ -75,41 +75,10 @@ read_terminal_response(char *sequence, char end_character,
 }
 
 int main(int argc, char **argv) {
-    int32 system_status = -1;
-
     signal(SIGINT, cleanup);
     signal(SIGHUP, cleanup);
     signal(SIGABRT, cleanup);
 
-    pid_t check_pid;
-    switch (check_pid = fork()) {
-    case -1:
-        error("Error forking: %s\n", strerror(errno));
-        fatal(EXIT_FAILURE);
-    case 0: {
-        int32 dev_null_descriptor = open("/dev/null", O_WRONLY);
-        xdup2(dev_null_descriptor, STDOUT_FILENO);
-        xdup2(dev_null_descriptor, STDERR_FILENO);
-        XCLOSE(&dev_null_descriptor);
-        execlp("sh", "sh", "-c", "command -v magick", (char *)NULL);
-        error("Error executing sh: %s\n", strerror(errno));
-        fatal(EXIT_FAILURE);
-    }
-    default: {
-        int32 check_status = 0;
-        waitpid(check_pid, &check_status, 0);
-        if (WIFEXITED(check_status)) {
-            system_status = WEXITSTATUS(check_status);
-        }
-        break;
-    }
-    }
-
-    if (system_status != 0) {
-        fprintf(stderr, "Please install ImageMagick\n");
-        return 1;
-    }
-    
     int32 num_colors = 16;
     char background[64];
     strcpy(background, "white");
