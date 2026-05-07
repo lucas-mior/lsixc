@@ -190,8 +190,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    char *find_xterm = strstr(TERM, "xterm");
-    if (find_xterm != NULL) {
+    if (strstr(TERM, "xterm")) {
         if (screen_width >= 1000) {
             screen_width = 1000;
         }
