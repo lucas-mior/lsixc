@@ -22,6 +22,7 @@
 
 static struct termios original_term_attrs;
 #define MAX_TERM_RESPONSE_LEN 256
+static char *index0 = "[0]";
 
 static void __attribute((noreturn))
 cleanup(int signal_number) {
@@ -248,7 +249,7 @@ int main(int argc, char **argv) {
 
             if (BEGINS_WITH((char *)mime_type, "image/")) {
                 list = realloc2(list, list_len, list_len + 1, SIZEOF(*list));
-                list[list_len].name = malloc2(filename_len + 1);
+                list[list_len].name = malloc2(filename_len + strlen32(index0) + 1);
                 strcpy(list[list_len].name, filename);
                 list[list_len].len = filename_len;
                 list_len += 1;
@@ -332,9 +333,6 @@ int main(int argc, char **argv) {
     int32 current_file_index = 0;
     
     while (current_file_index < list_len) {
-        char **allocated_labels;
-        char **allocated_urls;
-        int32 alloc_count;
         int32 goal;
         int32 remaining_files;
         int32 pipes[2];
@@ -347,45 +345,29 @@ int main(int argc, char **argv) {
             goal = 0;
         }
         
-        allocated_labels = malloc2(list_len*SIZEOF(*allocated_labels));
-        allocated_urls = malloc2(list_len*SIZEOF(*allocated_urls));
-        alloc_count = 0;
-        
         remaining_files = list_len - current_file_index;
         while (current_file_index < list_len && remaining_files > goal) {
-            char *current_file_name = list[current_file_index].name;
-            int32 name_len = list[current_file_index].len;
-            char *file_url;
+            char *path = list[current_file_index].name;
+            int32 path_len = list[current_file_index].len;
             
-            char *processed_label = malloc2(name_len + 1);
-            strcpy(processed_label, current_file_name);
-            allocated_labels[alloc_count] = processed_label;
-            
-            file_url = malloc2(1024);
-            allocated_urls[alloc_count] = file_url;
-            
-            strcpy(file_url, "file://");
-            strcat(file_url, current_file_name);
-            
-            if (name_len > 4) {
-                char *extension_gif = &current_file_name[name_len - 4];
+            if (path_len > 4) {
+                char *extension_gif = &path[path_len - 4];
                 if (strcasecmp(extension_gif, ".gif") == 0) {
-                    strcat(file_url, "[0]");
+                    memcpy64(path + path_len, index0, strlen32(index0));
                 }
             }
             
-            if (name_len > 5) {
-                char *extension_webp = &current_file_name[name_len - 5];
+            if (path_len > 5) {
+                char *extension_webp = &path[path_len - 5];
                 if (strcasecmp(extension_webp, ".webp") == 0) {
-                    strcat(file_url, "[0]");
+                    memcpy64(path + path_len, index0, strlen32(index0));
                 }
             }
             
             montage_argv[montage_argc++] = "-label";
-            montage_argv[montage_argc++] = current_file_name;
-            montage_argv[montage_argc++] = file_url;
+            montage_argv[montage_argc++] = path;
+            montage_argv[montage_argc++] = path;
             
-            alloc_count += 1;
             current_file_index += 1;
             remaining_files = list_len - current_file_index;
         }
@@ -454,13 +436,6 @@ int main(int argc, char **argv) {
         
         waitpid(montage_pid, NULL, 0);
         waitpid(sixel_pid, NULL, 0);
-        
-        for (int32 i = 0; i < alloc_count; i += 1) {
-            free2(allocated_labels[i], strlen32(allocated_labels[i]) + 1);
-            free2(allocated_urls[i], 1024);
-        }
-        free2(allocated_labels, list_len*SIZEOF(*allocated_labels));
-        free2(allocated_urls, list_len*SIZEOF(*allocated_urls));
     }
     
     catfile(STDERR_FILENO, error_file);
