@@ -120,11 +120,12 @@ int main(int argc, char **argv) {
     int32 num_tiles = screen_width / width_denominator;
 
     char error_file[] = "/tmp/lsixc-XXXXXX";
+    int32 error_fd;
 
     FileName *list = NULL;
     int32 list_len = 0;
 
-    if (mkstemp(error_file) < 0) {
+    if ((error_fd = mkstemp(error_file)) < 0) {
         error("Error in mkstemp: %s.\n", strerror(errno));
         fatal(EXIT_FAILURE);
     }
@@ -376,17 +377,11 @@ int main(int argc, char **argv) {
             error("Error forking: %s\n", strerror(errno));
             fatal(EXIT_FAILURE);
         case 0: {
-            int32 error_fd;
-            
             XCLOSE(&pipes[0]);
             xdup2(pipes[1], STDOUT_FILENO);
             XCLOSE(&pipes[1]);
             
-            error_fd = open(error_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
-            if (error_fd != -1) {
-                xdup2(error_fd, STDERR_FILENO);
-                XCLOSE(&error_fd);
-            }
+            xdup2(error_fd, STDERR_FILENO);
             
             execvp("magick", montage_argv);
             error("Error executing magick: %s\n", strerror(errno));
