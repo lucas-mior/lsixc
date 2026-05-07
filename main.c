@@ -282,7 +282,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (image_list_len == 0) {
+    if (image_list_len <= 0) {
         cleanup(0);
     }
 
