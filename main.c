@@ -262,21 +262,7 @@ int main(int argc, char **argv) {
             stat(argv[i], &path_status);
             
             if (S_ISDIR(path_status.st_mode)) {
-                pid_t recurse_pid;
-                printf("Recursing on %s\n", argv[i]);
-                switch (recurse_pid = fork()) {
-                case -1:
-                    error("Error forking: %s\n", strerror(errno));
-                    fatal(EXIT_FAILURE);
-                case 0:
-                    chdir(argv[i]);
-                    execlp(argv[0], argv[0], (char *)NULL);
-                    error("Error executing %s: %s\n", argv[0], strerror(errno));
-                    fatal(EXIT_FAILURE);
-                default:
-                    waitpid(recurse_pid, NULL, 0);
-                    break;
-                }
+                continue;
             } else {
                 int32 arg_len = strlen32(argv[i]);
                 file_list = realloc2(file_list, file_count, file_count + 1, sizeof(char *));
