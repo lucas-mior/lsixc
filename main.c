@@ -458,8 +458,8 @@ int main(int argc, char **argv) {
             free2(allocated_labels[i], strlen32(allocated_labels[i]) + 1);
             free2(allocated_urls[i], 1024);
         }
-        free2(allocated_labels, SIZEOF(char *)*image_list_len);
-        free2(allocated_urls, SIZEOF(char *)*image_list_len);
+        free2(allocated_labels, image_list_len*SIZEOF(*allocated_labels));
+        free2(allocated_urls, image_list_len*SIZEOF(*allocated_urls));
     }
     
     {
