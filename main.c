@@ -145,9 +145,9 @@ int main(int argc, char **argv) {
         num_colors = parsed_colors;
     }
 
-    char *terminal_environment = getenv("TERM");
-    if (terminal_environment != NULL) {
-        int32 compare_yaft_result = strncmp(terminal_environment, "yaft", 4);
+    char *TERM = getenv("TERM");
+    if (TERM != NULL) {
+        int32 compare_yaft_result = strncmp(TERM, "yaft", 4);
         if (compare_yaft_result == 0) {
             num_colors = 256;
         }
@@ -163,8 +163,8 @@ int main(int argc, char **argv) {
 
     read_terminal_response("\033]11;?\033\\", '\\', timeout_seconds, terminal_reply, SIZEOF(terminal_reply));
     
-    if (terminal_environment != NULL) {
-        int32 compare_yaft_result = strncmp(terminal_environment, "yaft", 4);
+    if (TERM != NULL) {
+        int32 compare_yaft_result = strncmp(TERM, "yaft", 4);
         if (compare_yaft_result == 0) {
             strcpy(background, "black");
             strcpy(foreground, "white");
@@ -189,8 +189,8 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (terminal_environment != NULL) {
-        char *find_xterm = strstr(terminal_environment, "xterm");
+    if (TERM != NULL) {
+        char *find_xterm = strstr(TERM, "xterm");
         if (find_xterm != NULL) {
             if (screen_width >= 1000) {
                 screen_width = 1000;
