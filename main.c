@@ -206,20 +206,16 @@ int main(int argc, char **argv) {
 
         read_term_response("\033[?2;1;0S", 'S', term_reply);
         if (sscanf(term_reply, "\033[?2;1;%dS", &parsed_width) == 1) {
-            error("sscanf1 succeded.\n");
             if (parsed_width > 0) {
                 screen_width = parsed_width;
             }
         } else {
-            error("sscanf1 failed.\n");
             read_term_response("\033[14t", 't', term_reply);
             if (sscanf(term_reply, "\033[4;%d;%dt", &parsed_colors, &parsed_width) == 2) {
-                error("sscanf2 succeded.\n");
                 if (parsed_width > 0) {
                     screen_width = parsed_width;
                 }
             } else {
-                error("sscanf2 failed.\n");
                 fatal(EXIT_FAILURE);
             }
         }
