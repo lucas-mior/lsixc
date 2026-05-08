@@ -470,6 +470,8 @@ int main(int argc, char **argv) {
     read_term_response("\033[c", 'c', term_reply);
     catfile(STDERR_FILENO, error_file);
 
-    memory_check();
+    if (DEBUGGING) {
+        memory_check();
+    }
     cleanup(0);
 }
