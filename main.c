@@ -207,7 +207,6 @@ int main(int argc, char **argv) {
         read_term_response("\033[?2;1;0S", 'S', term_reply);
         if (sscanf(term_reply, "\033[?2;1;%dS", &parsed_width) == 1) {
             error("sscanf1 succeded.\n");
-            PRINTLN(parsed_width);
             if (parsed_width > 0) {
                 screen_width = parsed_width;
             }
@@ -216,7 +215,6 @@ int main(int argc, char **argv) {
             read_term_response("\033[14t", 't', term_reply);
             if (sscanf(term_reply, "\033[4;%d;%dt", &parsed_colors, &parsed_width) == 2) {
                 error("sscanf2 succeded.\n");
-                PRINTLN(parsed_width);
                 if (parsed_width > 0) {
                     screen_width = parsed_width;
                 }
@@ -366,9 +364,6 @@ int main(int argc, char **argv) {
             goal = 0;
         }
 
-        PRINTLN(j);
-        PRINTLN(goal);
-        PRINTLN(remaining_files);
         while ((j < list_len) && (remaining_files > goal)) {
             char *path = list[j].path;
             int32 path_len = list[j].len;
