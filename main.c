@@ -114,10 +114,10 @@ int main(int argc, char **argv) {
     
     char *font_family = "Dejavu-Sans";
 
-    int32 tile_x_space = screen_width / 201;
-    int32 tile_y_space = tile_x_space / 2;
-    int32 width_denominator = tile_width + 2*tile_x_space + 1;
-    int32 num_tiles = screen_width / width_denominator;
+    int32 tile_x_space;
+    int32 tile_y_space;
+    int32 width_denominator;
+    int32 num_tiles;
 
     char error_file[] = "/tmp/lsixc-XXXXXX";
     int32 error_fd;
@@ -290,6 +290,11 @@ int main(int argc, char **argv) {
     if (list_len <= 0) {
         cleanup(0);
     }
+
+    tile_x_space = screen_width / 201;
+    tile_y_space = tile_x_space / 2;
+    width_denominator = tile_width + 2*tile_x_space + 1;
+    num_tiles = screen_width / width_denominator;
 
     char *montage_argv[10000];
     int32 montage_argc = 0;
