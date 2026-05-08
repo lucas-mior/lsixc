@@ -198,6 +198,7 @@ int main(int argc, char **argv) {
             num_colors = parsed_colors;
         }
     }
+    PRINTLN(num_colors);
 
     read_term_response("\033]11;?\033\\", '\\', term_reply);
     
@@ -325,9 +326,9 @@ int main(int argc, char **argv) {
     
     montage_argv[montage_argc++] = "-auto-orient";
     
-    if (num_colors > 16) {
-        montage_argv[montage_argc++] = "-shadow";
-    }
+    /* if (num_colors > 16) { */
+    /*     montage_argv[montage_argc++] = "-shadow"; */
+    /* } */
     
     if (strlen32(font_family) > 0) {
         montage_argv[montage_argc++] = "-font";
@@ -351,6 +352,10 @@ int main(int argc, char **argv) {
         pid_t sixel_pid;
         int32 montage_status = 0;
         int32 sixel_status = 0;
+        struct timespec t0_montage;
+        struct timespec t0_sixel;
+        struct timespec t1_montage;
+        struct timespec t1_sixel;
 
         montage_argc = base_argc;
 
@@ -389,6 +394,7 @@ int main(int argc, char **argv) {
         
         xpipe(pipes);
         
+        clock_gettime(CLOCK_MONOTONIC_RAW, &t0_montage);
         switch (montage_pid = fork()) {
         case -1:
             error("Error forking: %s\n", strerror(errno));
@@ -408,6 +414,7 @@ int main(int argc, char **argv) {
             break;
         }
         
+        clock_gettime(CLOCK_MONOTONIC_RAW, &t0_sixel);
         switch (sixel_pid = fork()) {
         case -1:
             error("Error forking: %s\n", strerror(errno));
@@ -443,7 +450,13 @@ int main(int argc, char **argv) {
         XCLOSE(&pipes[1]);
         
         waitpid(montage_pid, &montage_status, 0);
+        clock_gettime(CLOCK_MONOTONIC_RAW, &t1_montage);
+
         waitpid(sixel_pid, &sixel_status, 0);
+        clock_gettime(CLOCK_MONOTONIC_RAW, &t1_sixel);
+
+        PRINT_TIMINGS(10, t0_montage, t1_montage, "magick montage");
+        PRINT_TIMINGS(10, t0_sixel, t1_sixel, "magick sixel");
         
         if (WIFEXITED(montage_status) == 0) {
             break;
