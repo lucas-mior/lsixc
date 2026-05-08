@@ -22,6 +22,7 @@
 
 static struct termios original_term_attrs;
 #define MAX_TERM_RESPONSE_LEN 256
+#define MAX_DEFAULT_IMAGES 16
 static char *index0 = "[0]";
 
 static void __attribute((noreturn))
@@ -264,6 +265,10 @@ int main(int argc, char **argv) {
                 list[list_len].len = filename_len;
                 list_len += 1;
             }
+
+            if (list_len >= MAX_DEFAULT_IMAGES) {
+                break;
+            }
         }
         
         magic_close(magic_cookie);
@@ -455,8 +460,8 @@ int main(int argc, char **argv) {
         waitpid(sixel_pid, &sixel_status, 0);
         clock_gettime(CLOCK_MONOTONIC_RAW, &t1_sixel);
 
-        PRINT_TIMINGS(10, t0_montage, t1_montage, "magick montage");
-        PRINT_TIMINGS(10, t0_sixel, t1_sixel, "magick sixel");
+        /* PRINT_TIMINGS(10, t0_montage, t1_montage, "magick montage"); */
+        /* PRINT_TIMINGS(10, t0_sixel, t1_sixel, "magick sixel"); */
         
         if (WIFEXITED(montage_status) == 0) {
             break;
