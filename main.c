@@ -413,6 +413,8 @@ int main(int argc, char **argv) {
             XCLOSE(&pipes[1]);
             xdup2(pipes[0], STDIN_FILENO);
             XCLOSE(&pipes[0]);
+
+            xdup2(error_fd, STDERR_FILENO);
             
             SNPRINTF(num_colors_str, "%d", num_colors);
             
@@ -451,9 +453,8 @@ int main(int argc, char **argv) {
         }
     }
     
-    catfile(STDERR_FILENO, error_file);
-
     read_term_response("\033[c", 'c', term_reply);
+    catfile(STDERR_FILENO, error_file);
 
     memory_check();
     cleanup(0);
