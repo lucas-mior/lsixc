@@ -268,7 +268,7 @@ int main(int argc, char **argv) {
             int32 path_len = strlen32(path);
 
             if (stat(argv[i], &path_status) < 0) {
-                error("Error in stat(%s): %s.\n", argv[i], strerror(errno));
+                error("Error in stat(%s): %s.\n", path, strerror(errno));
                 fatal(EXIT_FAILURE);
             }
             
