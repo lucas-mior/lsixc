@@ -206,15 +206,23 @@ int main(int argc, char **argv) {
 
         read_term_response("\033[?2;1;0S", 'S', term_reply);
         if (sscanf(term_reply, "\033[?2;1;%dS", &parsed_width) == 1) {
+            error("sscanf1 succeded.\n");
+            PRINTLN(parsed_width);
             if (parsed_width > 0) {
                 screen_width = parsed_width;
             }
         } else {
+            error("sscanf1 failed.\n");
             read_term_response("\033[14t", 't', term_reply);
             if (sscanf(term_reply, "\033[4;%d;%dt", &parsed_colors, &parsed_width) == 2) {
+                error("sscanf2 succeded.\n");
+                PRINTLN(parsed_width);
                 if (parsed_width > 0) {
                     screen_width = parsed_width;
                 }
+            } else {
+                error("sscanf2 failed.\n");
+                fatal(EXIT_FAILURE);
             }
         }
     }
@@ -357,9 +365,12 @@ int main(int argc, char **argv) {
         if ((goal = list_len - num_tiles) < 0) {
             goal = 0;
         }
-        
+
         remaining_files = list_len - j;
-        while (j < list_len && remaining_files > goal) {
+        PRINTLN(j);
+        PRINTLN(goal);
+        PRINTLN(remaining_files);
+        while ((j < list_len) && (remaining_files > goal)) {
             char *path = list[j].path;
             int32 path_len = list[j].len;
             
@@ -413,6 +424,8 @@ int main(int argc, char **argv) {
         case 0: {
             char num_colors_str[32];
             char *sixel_argv[6];
+            char turn[32];
+            SNPRINTF(turn, "turn-%d.png", j);
             
             XCLOSE(&pipes[1]);
             xdup2(pipes[0], STDIN_FILENO);
@@ -426,7 +439,7 @@ int main(int argc, char **argv) {
             sixel_argv[1] = "-";
             sixel_argv[2] = "-colors";
             sixel_argv[3] = num_colors_str;
-            sixel_argv[4] = "image.png";
+            sixel_argv[4] = turn;
             sixel_argv[5] = NULL;
             
             execvp("magick", sixel_argv);
