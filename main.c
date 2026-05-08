@@ -342,22 +342,17 @@ int main(int argc, char **argv) {
     base_argc = montage_argc;
     j = 0;
 
-    for (int32 i = 0; i < list_len; i += 1) {
-        PRINTLN(list[i].path);
-    }
-
     while (j < list_len) {
         int32 goal;
         int32 remaining_files;
         int32 pipes[2];
         pid_t montage_pid;
         pid_t sixel_pid;
+        int32 montage_status = 0;
+        int32 sixel_status = 0;
 
         montage_argc = base_argc;
 
-        PRINTLN(j);
-        PRINTLN(list_len);
-        
         if ((goal = list_len - num_tiles) < 0) {
             goal = 0;
         }
@@ -439,8 +434,21 @@ int main(int argc, char **argv) {
         XCLOSE(&pipes[0]);
         XCLOSE(&pipes[1]);
         
-        waitpid(montage_pid, NULL, 0);
-        waitpid(sixel_pid, NULL, 0);
+        waitpid(montage_pid, &montage_status, 0);
+        waitpid(sixel_pid, &sixel_status, 0);
+        
+        if (WIFEXITED(montage_status) == 0) {
+            break;
+        }
+        if (WEXITSTATUS(montage_status) != 0) {
+            break;
+        }
+        if (WIFEXITED(sixel_status) == 0) {
+            break;
+        }
+        if (WEXITSTATUS(sixel_status) != 0) {
+            break;
+        }
     }
     
     catfile(STDERR_FILENO, error_file);
