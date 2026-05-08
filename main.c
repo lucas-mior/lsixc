@@ -356,7 +356,6 @@ int main(int argc, char **argv) {
         pid_t sixel_pid;
         int32 montage_status = 0;
         int32 sixel_status = 0;
-        char cmd[4096];
 
         montage_argc = base_argc;
 
@@ -387,8 +386,11 @@ int main(int argc, char **argv) {
         montage_argv[montage_argc++] = "gif:/dev/stdout";
         montage_argv[montage_argc++] = NULL;
 
-        STRING_FROM_ARRAY(cmd, " ", montage_argv, montage_argc);
-        PRINTLN(cmd);
+        if (DEBUGGING) {
+            char cmd[4096];
+            STRING_FROM_ARRAY(cmd, " ", montage_argv, montage_argc);
+            PRINTLN(cmd);
+        }
         
         xpipe(pipes);
         
