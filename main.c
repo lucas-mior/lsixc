@@ -198,7 +198,6 @@ int main(int argc, char **argv) {
             num_colors = parsed_colors;
         }
     }
-    PRINTLN(num_colors);
 
     read_term_response("\033]11;?\033\\", '\\', term_reply);
     
