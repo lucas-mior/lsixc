@@ -231,7 +231,6 @@ int main(int argc, char **argv) {
         DIR *directory;
         struct dirent *directory_entry;
         magic_t magic_cookie;
-        int32 magic_load_result;
 
         if ((directory = opendir(".")) == NULL) {
             error("Error opening current directory: %s.\n", strerror(errno));
@@ -243,8 +242,7 @@ int main(int argc, char **argv) {
             fatal(EXIT_FAILURE);
         }
         
-        magic_load_result = magic_load(magic_cookie, NULL);
-        if (magic_load_result != 0) {
+        if (magic_load(magic_cookie, NULL) != 0) {
             error("Error loading magic database: %s\n", (char *)magic_error(magic_cookie));
             fatal(EXIT_FAILURE);
         }

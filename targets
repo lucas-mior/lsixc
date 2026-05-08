@@ -9,6 +9,7 @@ debug
 # benchmark
 # perf
 # valgrind
+# callgrind
 # test_all
 # check
 cross x86-windows-gnu
