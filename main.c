@@ -243,7 +243,8 @@ int main(int argc, char **argv) {
         }
         
         if (magic_load(magic_cookie, NULL) != 0) {
-            error("Error loading magic database: %s\n", (char *)magic_error(magic_cookie));
+            error("Error loading magic database: %s\n",
+                  (char *)magic_error(magic_cookie));
             fatal(EXIT_FAILURE);
         }
         
