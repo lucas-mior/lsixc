@@ -263,7 +263,9 @@ int main(int argc, char **argv) {
         magic_close(magic_cookie);
         closedir(directory);
         
-        qsort64(list, list_len, SIZEOF(*list), compare_filenames);
+        if (list_len > 1) {
+            qsort64(list, list_len, SIZEOF(*list), compare_filenames);
+        }
     } else {
         for (int32 i = 1; i < argc; i += 1) {
             struct stat path_status;
