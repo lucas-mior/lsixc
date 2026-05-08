@@ -378,7 +378,7 @@ int main(int argc, char **argv) {
             remaining_files = list_len - j;
         }
         
-        montage_argv[montage_argc++] = "gif:-";
+        montage_argv[montage_argc++] = "gif:/dev/stdout";
         montage_argv[montage_argc++] = NULL;
         
         xpipe(pipes);
@@ -422,7 +422,7 @@ int main(int argc, char **argv) {
             sixel_argv[1] = "-";
             sixel_argv[2] = "-colors";
             sixel_argv[3] = num_colors_str;
-            sixel_argv[4] = "sixel:-";
+            sixel_argv[4] = "sixel:/dev/stdout";
             sixel_argv[5] = NULL;
             
             execvp("magick", sixel_argv);
