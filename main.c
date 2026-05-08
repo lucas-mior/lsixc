@@ -477,7 +477,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    free2(montage_argv, (list_len+100)*SIZEOF(*montage_argv));
+    free2(montage_argv, (list_len + 100)*SIZEOF(*montage_argv));
     
     read_term_response("\033[c", 'c', term_reply);
     catfile(STDERR_FILENO, error_file);
