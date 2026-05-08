@@ -351,8 +351,8 @@ int main(int argc, char **argv) {
     j = 0;
 
     while (j < list_len) {
-        int32 goal;
-        int32 remaining_files;
+        int32 remaining_files = list_len - j;
+        int32 goal = remaining_files - num_tiles;
         int32 pipes[2];
         pid_t montage_pid;
         pid_t sixel_pid;
@@ -362,11 +362,10 @@ int main(int argc, char **argv) {
 
         montage_argc = base_argc;
 
-        if ((goal = list_len - num_tiles) < 0) {
+        if (goal < 0) {
             goal = 0;
         }
 
-        remaining_files = list_len - j;
         PRINTLN(j);
         PRINTLN(goal);
         PRINTLN(remaining_files);
@@ -424,8 +423,6 @@ int main(int argc, char **argv) {
         case 0: {
             char num_colors_str[32];
             char *sixel_argv[6];
-            char turn[32];
-            SNPRINTF(turn, "turn-%d.png", j);
             
             XCLOSE(&pipes[1]);
             xdup2(pipes[0], STDIN_FILENO);
@@ -439,7 +436,7 @@ int main(int argc, char **argv) {
             sixel_argv[1] = "-";
             sixel_argv[2] = "-colors";
             sixel_argv[3] = num_colors_str;
-            sixel_argv[4] = turn;
+            sixel_argv[4] = "sixel:/dev/stdout";
             sixel_argv[5] = NULL;
             
             execvp("magick", sixel_argv);
