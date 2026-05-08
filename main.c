@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
     int32 j;
     int32 base_argc;
 
-    char *montage_argv[10000];
+    char **montage_argv;
     int32 montage_argc = 0;
     char tile_arg[64];
     char geometry_arg[128];
@@ -304,6 +304,7 @@ int main(int argc, char **argv) {
     width_denominator = tile_width + 2*tile_x_space + 1;
     num_tiles = screen_width / width_denominator;
 
+    montage_argv = malloc2((list_len + 100)*SIZEOF(*montage_argv));
     montage_argv[montage_argc++] = "magick";
     montage_argv[montage_argc++] = "montage";
     
@@ -470,6 +471,8 @@ int main(int argc, char **argv) {
             break;
         }
     }
+
+    free2(montage_argv, (list_len+100)*SIZEOF(*montage_argv));
     
     read_term_response("\033[c", 'c', term_reply);
     catfile(STDERR_FILENO, error_file);
