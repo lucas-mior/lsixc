@@ -124,6 +124,9 @@ int main(int argc, char **argv) {
 
     FileName *list = NULL;
     int32 list_len = 0;
+    char font_size_string[64];
+    int32 j;
+    int32 base_argc;
 
     if ((error_fd = mkstemp(error_file)) < 0) {
         error("Error in mkstemp: %s.\n", strerror(errno));
@@ -323,17 +326,16 @@ int main(int argc, char **argv) {
         montage_argv[montage_argc++] = font_family;
     }
     
-    char font_size_string[64];
     if (font_size > 0) {
         SNPRINTF(font_size_string, "%d", font_size);
         montage_argv[montage_argc++] = "-pointsize";
         montage_argv[montage_argc++] = font_size_string;
     }
 
-    int32 base_argc = montage_argc;
-    int32 i = 0;
+    base_argc = montage_argc;
+    j = 0;
     
-    while (i < list_len) {
+    while (j < list_len) {
         int32 goal;
         int32 remaining_files;
         int32 pipes[2];
@@ -346,10 +348,10 @@ int main(int argc, char **argv) {
             goal = 0;
         }
         
-        remaining_files = list_len - i;
-        while (i < list_len && remaining_files > goal) {
-            char *path = list[i].path;
-            int32 path_len = list[i].len;
+        remaining_files = list_len - j;
+        while (j < list_len && remaining_files > goal) {
+            char *path = list[j].path;
+            int32 path_len = list[j].len;
             
             if (ENDS_WITH(path, ".gif")) {
                 memcpy64(path + path_len, index0, strlen32(index0) + 1);
@@ -363,8 +365,8 @@ int main(int argc, char **argv) {
             montage_argv[montage_argc++] = path;
             montage_argv[montage_argc++] = path;
             
-            i += 1;
-            remaining_files = list_len - i;
+            j += 1;
+            remaining_files = list_len - j;
         }
         
         montage_argv[montage_argc++] = "gif:-";
