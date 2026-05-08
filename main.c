@@ -33,7 +33,7 @@ cleanup(int signal_number) {
 }
 
 typedef struct FileName {
-    char *name;
+    char *path;
     int32 len;
 } FileName;
 
@@ -91,7 +91,7 @@ compare_filenames(const void *a, const void *b) {
     FileName *file_a = (FileName *)a;
     FileName *file_b = (FileName *)b;
     
-    return strcmp(file_a->name, file_b->name);
+    return strcmp(file_a->path, file_b->path);
 }
 
 int main(int argc, char **argv) {
@@ -250,8 +250,8 @@ int main(int argc, char **argv) {
 
             if (BEGINS_WITH((char *)mime_type, "image/")) {
                 list = realloc2(list, list_len, list_len + 1, SIZEOF(*list));
-                list[list_len].name = malloc2(filename_len + strlen32(index0) + 1);
-                strcpy(list[list_len].name, filename);
+                list[list_len].path = malloc2(filename_len + strlen32(index0) + 1);
+                strcpy(list[list_len].path, filename);
                 list[list_len].len = filename_len;
                 list_len += 1;
             }
@@ -277,8 +277,8 @@ int main(int argc, char **argv) {
             }
 
             list = realloc2(list, list_len, list_len + 1, SIZEOF(*list));
-            list[list_len].name = malloc2(path_len + strlen32(index0) + 1);
-            strcpy(list[list_len].name, path);
+            list[list_len].path = malloc2(path_len + strlen32(index0) + 1);
+            strcpy(list[list_len].path, path);
             list[list_len].len = path_len;
             list_len += 1;
         }
@@ -348,7 +348,7 @@ int main(int argc, char **argv) {
         
         remaining_files = list_len - current_file_index;
         while (current_file_index < list_len && remaining_files > goal) {
-            char *path = list[current_file_index].name;
+            char *path = list[current_file_index].path;
             int32 path_len = list[current_file_index].len;
             
             if (ENDS_WITH(path, ".gif")) {
