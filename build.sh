@@ -238,11 +238,6 @@ case "$target" in
     trace_off
     exit
     ;;
-"assembly")
-    trace_on
-    $CC $CPPFLAGS $CFLAGS -S $LDFLAGS -o ${program}_$CC.S "$main"
-    exit
-    ;;
 "test")
     find . -iname "*.c" | sort | while read -r src; do
         trace_off
