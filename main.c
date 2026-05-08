@@ -128,6 +128,11 @@ int main(int argc, char **argv) {
     int32 j;
     int32 base_argc;
 
+    char *montage_argv[10000];
+    int32 montage_argc = 0;
+    char tile_arg[64];
+    char geometry_arg[128];
+    
     if ((error_fd = mkstemp(error_file)) < 0) {
         error("Error in mkstemp: %s.\n", strerror(errno));
         fatal(EXIT_FAILURE);
@@ -298,18 +303,13 @@ int main(int argc, char **argv) {
     width_denominator = tile_width + 2*tile_x_space + 1;
     num_tiles = screen_width / width_denominator;
 
-    char *montage_argv[10000];
-    int32 montage_argc = 0;
-    
     montage_argv[montage_argc++] = "magick";
     montage_argv[montage_argc++] = "montage";
     
-    char tile_arg[64];
     SNPRINTF(tile_arg, "%dx1", num_tiles);
     montage_argv[montage_argc++] = "-tile";
     montage_argv[montage_argc++] = tile_arg;
     
-    char geometry_arg[128];
     SNPRINTF(geometry_arg,
              "%dx%d>+%d+%d",
              tile_width, tile_height, tile_x_space, tile_y_space);
@@ -341,7 +341,11 @@ int main(int argc, char **argv) {
 
     base_argc = montage_argc;
     j = 0;
-    
+
+    for (int32 i = 0; i < list_len; i += 1) {
+        PRINTLN(list[i].path);
+    }
+
     while (j < list_len) {
         int32 goal;
         int32 remaining_files;
@@ -350,6 +354,9 @@ int main(int argc, char **argv) {
         pid_t sixel_pid;
 
         montage_argc = base_argc;
+
+        PRINTLN(j);
+        PRINTLN(list_len);
         
         if ((goal = list_len - num_tiles) < 0) {
             goal = 0;
