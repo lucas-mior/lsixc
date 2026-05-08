@@ -331,9 +331,9 @@ int main(int argc, char **argv) {
     }
 
     int32 base_argc = montage_argc;
-    int32 current_file_index = 0;
+    int32 i = 0;
     
-    while (current_file_index < list_len) {
+    while (i < list_len) {
         int32 goal;
         int32 remaining_files;
         int32 pipes[2];
@@ -346,10 +346,10 @@ int main(int argc, char **argv) {
             goal = 0;
         }
         
-        remaining_files = list_len - current_file_index;
-        while (current_file_index < list_len && remaining_files > goal) {
-            char *path = list[current_file_index].path;
-            int32 path_len = list[current_file_index].len;
+        remaining_files = list_len - i;
+        while (i < list_len && remaining_files > goal) {
+            char *path = list[i].path;
+            int32 path_len = list[i].len;
             
             if (ENDS_WITH(path, ".gif")) {
                 memcpy64(path + path_len, index0, strlen32(index0) + 1);
@@ -363,8 +363,8 @@ int main(int argc, char **argv) {
             montage_argv[montage_argc++] = path;
             montage_argv[montage_argc++] = path;
             
-            current_file_index += 1;
-            remaining_files = list_len - current_file_index;
+            i += 1;
+            remaining_files = list_len - i;
         }
         
         montage_argv[montage_argc++] = "gif:-";
