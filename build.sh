@@ -22,7 +22,7 @@ dir=$(dirname "$(readlink -f "$0")")
 cbase="cbase"
 CPPFLAGS="$CPPFLAGS -I$dir/$cbase"
 cd "$dir" || exit
-program=$(basename "$(readlink -f "$(dirname "$0")")")
+program=$(basename "$dir")
 script=$(basename "$0")
 
 . ./targets
