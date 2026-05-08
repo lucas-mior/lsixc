@@ -16,8 +16,8 @@
 #include <errno.h>
 #include <magic.h>
 
-#include "util.c"
 #define MEMORY_CHECK_USE_AFTER_FREE 0
+#include "util.c"
 #include "memory.c"
 
 static struct termios original_term_attrs;
