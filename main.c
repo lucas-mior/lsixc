@@ -201,10 +201,10 @@ int main(int argc, char **argv) {
 
     read_term_response("\033]11;?\033\\", '\\', term_reply);
     
-    read_term_response("\033[?2;1;0S", 'S', term_reply);
-    
     {
         int32 parsed_width = 0;
+
+        read_term_response("\033[?2;1;0S", 'S', term_reply);
         if (sscanf(term_reply, "\033[?2;1;%dS", &parsed_width) == 1) {
             if (parsed_width > 0) {
                 screen_width = parsed_width;
@@ -350,6 +350,7 @@ int main(int argc, char **argv) {
         pid_t sixel_pid;
         int32 montage_status = 0;
         int32 sixel_status = 0;
+        char cmd[4096];
 
         montage_argc = base_argc;
 
@@ -380,6 +381,9 @@ int main(int argc, char **argv) {
         
         montage_argv[montage_argc++] = "gif:/dev/stdout";
         montage_argv[montage_argc++] = NULL;
+
+        STRING_FROM_ARRAY(cmd, " ", montage_argv, montage_argc);
+        PRINTLN(cmd);
         
         xpipe(pipes);
         
@@ -422,7 +426,7 @@ int main(int argc, char **argv) {
             sixel_argv[1] = "-";
             sixel_argv[2] = "-colors";
             sixel_argv[3] = num_colors_str;
-            sixel_argv[4] = "sixel:/dev/stdout";
+            sixel_argv[4] = "image.png";
             sixel_argv[5] = NULL;
             
             execvp("magick", sixel_argv);
