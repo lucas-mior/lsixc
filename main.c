@@ -325,9 +325,9 @@ int main(int argc, char **argv) {
     
     montage_argv[montage_argc++] = "-auto-orient";
     
-    /* if (num_colors > 16) { */
-    /*     montage_argv[montage_argc++] = "-shadow"; */
-    /* } */
+    if (num_colors > 16) {
+        montage_argv[montage_argc++] = "-shadow";
+    }
     
     if (strlen32(font_family) > 0) {
         montage_argv[montage_argc++] = "-font";
