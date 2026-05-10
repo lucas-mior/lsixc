@@ -475,6 +475,7 @@ int main(int argc, char **argv) {
         if (WEXITSTATUS(sixel_status) != 0) {
             break;
         }
+        printf("\n");
     }
 
     free2(montage_argv, (list_len + 100)*SIZEOF(*montage_argv));
