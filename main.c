@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
     char term_reply[MAX_TERM_RESPONSE_LEN];
     char *TERM;
     bool has_sixel = false;
-    char *force_sixel = getenv("LSIX_FORCE_SIXEL_SUPPORT");
+    char *LSIX_FORCE_SIXEL_SUPPORT;
     int32 num_colors = 16;
     char background[64];
     char foreground[64];
@@ -146,6 +146,7 @@ int main(int argc, char **argv) {
     strcpy(background, "white");
     strcpy(foreground, "black");
     
+    GETENV(LSIX_FORCE_SIXEL_SUPPORT);
 
     tcgetattr(STDIN_FILENO, &original_term_attrs);
     
@@ -170,7 +171,7 @@ int main(int argc, char **argv) {
     }
 
     if (has_sixel == 0) {
-        if (force_sixel == NULL) {
+        if (LSIX_FORCE_SIXEL_SUPPORT == NULL) {
             fprintf(stderr, "Error: Your terminal does not report having sixel graphics support.\n");
             cleanup(0);
         }
