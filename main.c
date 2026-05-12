@@ -88,7 +88,7 @@ read_term_response(char *sequence, char end_character, char *output_buffer) {
 }
 
 static int32
-compare_filenames(const void *a, const void *b) {
+compare_filenames(void *a, void *b) {
     FileName *file_a = (FileName *)a;
     FileName *file_b = (FileName *)b;
     

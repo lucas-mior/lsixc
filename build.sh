@@ -204,6 +204,7 @@ if [ "$CC" = "clang" ]; then
     CFLAGS="$CFLAGS -Wno-c23-extensions"
     CFLAGS="$CFLAGS -Wno-implicit-int-enum-cast"
     CFLAGS="$CFLAGS -Wno-assign-enum"
+    CFLAGS="$CFLAGS -Wno-cast-function-type-strict"
 fi
 
 
