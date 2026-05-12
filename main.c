@@ -253,12 +253,14 @@ int main(int argc, char **argv) {
             char *filename = directory_entry->d_name;
             int32 filename_len = strlen32(filename);
             const char *mime_type;
+            int32 mime_type_len;
             
             if ((mime_type = magic_file(magic_cookie, filename)) == NULL) {
                 continue;
             }
+            mime_type_len = strlen32((char *)mime_type);
 
-            if (BEGINS_WITH((char *)mime_type, "image/")) {
+            if (BEGINS_WITH((char *)mime_type, mime_type_len, "image/")) {
                 list = realloc2(list, list_len, list_len + 1, SIZEOF(*list));
                 list[list_len].path = malloc2(filename_len + strlen32(index0) + 1);
                 strcpy(list[list_len].path, filename);
@@ -372,11 +374,11 @@ int main(int argc, char **argv) {
             char *path = list[j].path;
             int32 path_len = list[j].len;
             
-            if (ENDS_WITH(path, ".gif")) {
+            if (ENDS_WITH(path, path_len, ".gif")) {
                 memcpy64(path + path_len, index0, strlen32(index0) + 1);
             }
             
-            if (ENDS_WITH(path, ".webp")) {
+            if (ENDS_WITH(path, path_len, ".webp")) {
                 memcpy64(path + path_len, index0, strlen32(index0) + 1);
             }
             
