@@ -17,7 +17,9 @@
 #include <magic.h>
 
 #define MEMORY_CHECK_USE_AFTER_FREE 0
-#include "util.c"
+#define CBASE_IMPLEMENT
+#include "cbase.h"
+
 #include "memory.c"
 
 static struct termios original_term_attrs;
