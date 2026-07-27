@@ -9,3 +9,5 @@ jabba.webp
 callgrind*
 images
 *.o
+*.cmd
+*.o

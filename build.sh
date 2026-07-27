@@ -206,6 +206,27 @@ if [ "$CC" = "clang" ]; then
     CFLAGS="$CFLAGS -Wno-cast-function-type-strict"
 fi
 
+install_opt () {
+    mode="$1"
+    file="$2"
+    dest="$3"
+
+    if [ -f "$file" ]; then
+        install "$mode" "$file" "$dest"
+    elif [ -d "$file" ]; then
+        install "$mode" "$dest"
+        cp -rp "$file/." "$dest/"
+    fi
+}
+
+uninstall_opt () {
+    file="$1"
+    dest="$2"
+
+    if [ -e "$file" ]; then
+        rm -rf "$dest"
+    fi
+}
 
 case "$target" in
 "fast_feedback")
@@ -224,17 +245,12 @@ case "$target" in
     if [ ! -f "$program" ]; then
         $0 build
     fi
-    install -Dm755 bin/${program}   ${DESTDIR}${PREFIX}/bin/${program}
-    install -Dm644 ${program}.1 ${DESTDIR}${PREFIX}/man/man1/${program}.1
-    if [ -d "etc" ]; then
-        install -dm755 "$DESTDIR/etc/$program"
-        cp -rp etc/* "$DESTDIR/etc/$program/"
-    fi
-    if [ -f "$program.desktop" ]; then
-        install -Dm755 \
-            "$program.desktop" \
-            "$DESTDIR/usr/share/applications/$program.desktop"
-    fi
+    install_opt -Dm755 bin/${program}   ${DESTDIR}${PREFIX}/bin/${program}
+    install_opt -Dm644 ${program}.1 ${DESTDIR}${PREFIX}/man/man1/${program}.1
+    install_opt -dm755 etc/ "$DESTDIR/etc/$program"
+    install_opt -Dm755 \
+        "$program.desktop" \
+        "$DESTDIR/usr/share/applications/$program.desktop"
     trace_off
     exit
     ;;
