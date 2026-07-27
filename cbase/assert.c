@@ -4,27 +4,16 @@
 #if !defined(ASSERT_C)
 #define ASSERT_C
 
-#include <assert.h>
-#include <errno.h>
-#include <float.h>
-#include <limits.h>
-#include <signal.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #if defined(__INCLUDE_LEVEL__) && (__INCLUDE_LEVEL__ == 0)
 #define TESTING_assert 1
 #elif !defined(TESTING_assert)
 #define TESTING_assert 0
 #endif
 
-#include "platform_detection.h"
+#include "libc.h"
 #include "primitives.h"
 #include "base_macros.h"
-#include "generic.c"
+#include "platform_detection.h"
 
 #define ASSERT_FP_KIND_NONE    0
 #define ASSERT_FP_KIND_FLOAT   1
@@ -902,8 +891,8 @@ _Generic((VAR1),                                                        \
 } while (0)
 
 #if TESTING_assert
-#include <setjmp.h>
-#include <signal.h>
+#define CBASE_IMPLEMENT
+#include "cbase.h"
 
 static sig_atomic_t assertion_failed = false;
 static sigjmp_buf assert_env;
@@ -1072,6 +1061,16 @@ main(void) {
         ASSERT_LESS(b, a);
         ASSERT_LESS_EQUAL(b, a);
     } {
+        char haystack[] = "alpha beta gamma";
+        char binary_haystack[] = { 'a', 'b', '\0', 'c', 'd' };
+
+        ASSERT_CONTAINS(haystack, SIZEOF(haystack) - 1, "alpha");
+        ASSERT_CONTAINS(haystack, SIZEOF(haystack) - 1, "beta");
+        ASSERT_CONTAINS(binary_haystack, SIZEOF(binary_haystack), "cd");
+        ASSERT_NOT_CONTAINS(haystack, SIZEOF(haystack) - 1, "delta");
+        ASSERT_NOT_CONTAINS(haystack, 10, "gamma");
+        ASSERT_NOT_CONTAINS(binary_haystack, SIZEOF(binary_haystack), "bc");
+    } {
         // uncomment to trigger linking error
         /* double x = 0.1; */
         /* void *a = NULL; */
@@ -1146,11 +1145,25 @@ main(void) {
         }
         ASSERT(assertion_failed);
         assertion_failed = false;
+
+        if (sigsetjmp(assert_env, 1) == 0) {
+            ASSERT_CONTAINS("alpha beta gamma\n", 17, "delta\n");
+        }
+        ASSERT(assertion_failed);
+        assertion_failed = false;
+
+        if (sigsetjmp(assert_env, 1) == 0) {
+            ASSERT_NOT_CONTAINS("alpha beta\n gamma\n", 18, "beta\n");
+        }
+        ASSERT(assertion_failed);
+        assertion_failed = false;
     }
+
     ASSERT(true);
     ASSERT(!false);
     ASSERT_EQUAL(true, true);
-    ASSERT_EQUAL(0 < 1, 1 < 2);
+    ASSERT_EQUAL(0 < 1, 1 < 3);
+
     exit(EXIT_SUCCESS);
 }
 #endif
