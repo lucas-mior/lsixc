@@ -22,7 +22,7 @@ dir=$(dirname "$(readlink -f "$0")")
 cbase="cbase"
 CPPFLAGS="$CPPFLAGS -I$dir/$cbase"
 cd "$dir" || exit
-program=$(basename "$dir")
+program=$(basename "$(readlink -f "$(dirname "$0")")")
 script=$(basename "$0")
 
 . ./targets
@@ -53,7 +53,6 @@ CFLAGS="$CFLAGS -Wno-format-pedantic"
 CFLAGS="$CFLAGS -Wno-unknown-warning-option"
 CFLAGS="$CFLAGS -Wno-gnu-union-cast"
 CFLAGS="$CFLAGS -Wno-unused-macros"
-CFLAGS="$CFLAGS -Wno-unused-function"
 CFLAGS="$CFLAGS -Wno-constant-logical-operand"
 CFLAGS="$CFLAGS -Wno-float-equal"
 CFLAGS="$CFLAGS -Wno-undefined-internal"
