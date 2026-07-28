@@ -1,20 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <signal.h>
-#include <termios.h>
-#include <sys/select.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <dirent.h>
-#include <ctype.h>
-#include <time.h>
-#include <sys/time.h>
-#include <errno.h>
 #include <magic.h>
+#include <termios.h>
 
 #define MEMORY_CHECK_USE_AFTER_FREE 0
 #define CBASE_IMPLEMENT
