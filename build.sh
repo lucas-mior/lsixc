@@ -103,11 +103,15 @@ LDFLAGS="$LDFLAGS -lm -lmagic"
 
 OS=$(uname -a)
 
-if [ "$target" = "test" ] && [ -z "$CC" ] && command tcc > /dev/null 2>&1; then
-    CC=tcc
-else
-    CC="${CC:-cc}"
-fi
+requested_cc=${CC:-}
+case "$target" in
+"debug"|"test"|"fast_feedback")
+    CC="${requested_cc:-tcc}"
+    ;;
+*)
+    CC="${requested_cc:-cc}"
+    ;;
+esac
 
 noop () {
     return
@@ -199,7 +203,6 @@ case "$target" in
     CFLAGS="$CFLAGS $GNUSOURCE -DRELEASING=1 -O2 -flto -march=native -ftree-vectorize"
     ;;
 "fast_feedback")
-    CC=clang
     CFLAGS="$CFLAGS $GNUSOURCE -Werror"
     ;;
 
