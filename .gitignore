@@ -8,7 +8,8 @@ dynamicff.png
 jabba.webp
 callgrind*
 images
-*.o
+*temp_delete_me*
 *.cmd
 *.o
-*temp_delete_me*
+bin/
+*.tar.gz
