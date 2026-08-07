@@ -103,11 +103,17 @@ LDFLAGS="$LDFLAGS -lm -lmagic"
 
 OS=$(uname -a)
 
-if [ "$target" = "test" ] && [ -z "$CC" ] && command tcc > /dev/null 2>&1; then
-    CC=tcc
-else
+case "$target" in
+debug|test)
+    CC="${CC:-tcc}"
+    ;;
+fast_feedback)
+    CC="${CC:-clang}"
+    ;;
+*)
     CC="${CC:-cc}"
-fi
+    ;;
+esac
 
 noop () {
     return

@@ -115,6 +115,10 @@ fast_feedback)
     ;;
 esac
 
+if ! command -v "$CC" > /dev/null 2>&1; then
+    CC=cc
+fi
+
 noop () {
     return
 }
