@@ -172,43 +172,43 @@ with_other () {
 }
 
 case "$target" in
-"debug")
+debug)
     CFLAGS="$CFLAGS -g3 -fsanitize=undefined"
     CPPFLAGS="$CPPFLAGS $GNUSOURCE -DDEBUGGING=1"
     exe="bin/${program}_debug"
     ;;
-"benchmark")
+benchmark)
     CFLAGS="$CFLAGS -O2 -flto -march=native -ftree-vectorize"
     CPPFLAGS="$CPPFLAGS $GNUSOURCE -DBRN2_BENCHMARK=1"
     exe="bin/${program}_benchmark"
     ;;
-"perf")
+perf)
     CFLAGS="$CFLAGS -g3 -Og -flto"
     CPPFLAGS="$CPPFLAGS $GNUSOURCE -DBRN2_BENCHMARK=1"
     exe="bin/${program}_perf"
     ;;
-"valgrind")
+valgrind)
     CFLAGS="$CFLAGS -g3 -O0 -ftree-vectorize"
     CPPFLAGS="$CPPFLAGS $GNUSOURCE -DDEBUGGING=1"
     ;;
-"callgrind")
+callgrind)
     CFLAGS="$CFLAGS -g3 -O2 -ftree-vectorize"
     CPPFLAGS="$CPPFLAGS $GNUSOURCE"
     ;;
-"test")
+test)
     CFLAGS="$CFLAGS -g3 $GNUSOURCE -DDEBUGGING=1 -fsanitize=undefined -Wno-address"
     ;;
-"check")
+check)
     CC=gcc
     CFLAGS="$CFLAGS $GNUSOURCE -DDEBUGGING=1 -fanalyzer"
     ;;
-"build")
+build)
     CFLAGS="$CFLAGS $GNUSOURCE -O2 -flto -march=native -ftree-vectorize"
     ;;
-"release")
+release)
     CFLAGS="$CFLAGS $GNUSOURCE -DRELEASING=1 -O2 -flto -march=native -ftree-vectorize"
     ;;
-"fast_feedback")
+fast_feedback)
     CFLAGS="$CFLAGS $GNUSOURCE -Werror"
     ;;
 
@@ -224,7 +224,7 @@ if [ "$target" = "cross" ]; then
     CFLAGS=$(option_remove "$CFLAGS" "-D_GNU_SOURCE")
 
     case $cross in
-    "x86_64-macos"|"aarch64-macos")
+    x86_64-macos|aarch64-macos)
         CFLAGS="$CFLAGS -fno-lto"
         LDFLAGS="$LDFLAGS -lpthread"
         ;;
@@ -279,18 +279,18 @@ uninstall_opt () {
 }
 
 case "$target" in
-"fast_feedback")
+fast_feedback)
     trace_on
     $CC $CPPFLAGS $CFLAGS main.c -o "$exe" $LDFLAGS && LC_ALL=C "$exe"
     trace_off
     ;;
-"uninstall")
+uninstall)
     trace_on
     rm -f ${DESTDIR}${PREFIX}/bin/${program}
     rm -f ${DESTDIR}${PREFIX}/man/man1/${program}.1
     exit
     ;;
-"install")
+install)
     trace_on
     if [ ! -f "$program" ]; then
         $0 build
@@ -304,7 +304,7 @@ case "$target" in
     trace_off
     exit
     ;;
-"test")
+test)
     find . -iname "*.c" | sort | while read -r src; do
         trace_off
         name=$(basename "$src")
@@ -365,7 +365,7 @@ case "$target" in
     done
     exit
     ;;
-"test_all")
+test_all)
     ;;
 *)
     trace_on
@@ -383,7 +383,7 @@ case "$target" in
 esac
 
 case "$target" in
-"check")
+check)
     CC=gcc CFLAGS="-fanalyzer" ./build.sh
 
     CFLAGS="--analyze -Xanalyzer -analyzer-output=text"
