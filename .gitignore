@@ -11,3 +11,4 @@ images
 *.o
 *.cmd
 *.o
+*temp_delete_me*
