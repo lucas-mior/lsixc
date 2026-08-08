@@ -307,7 +307,7 @@ case "$target" in
         if [ -n "$2" ] && [ "$name" != "$2" ]; then
             continue
         fi
-        if [ "$name" = "main.c" ]; then
+        if [ "$name" = main.c ]; then
             continue
         fi
         if echo "$src" | grep -q "stc/"; then
@@ -367,11 +367,11 @@ case "$target" in
     find . -iname "*.[ch]" | xargs ctags --kinds-C=+l+d 2> /dev/null || true
     vtags.sed tags | sort | uniq > .tags.vim       2> /dev/null || true
     if [ "$CC" = "chibicc" ]; then
-        with_other chibicc $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "main.c"
+        with_other chibicc $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} main.c
     elif [ "$CC" = "cproc" ]; then
-        with_other cproc   $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "main.c"
+        with_other cproc   $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} main.c
     else
-        $CC $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "main.c"
+        $CC $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} main.c
     fi
     trace_off
     ;;

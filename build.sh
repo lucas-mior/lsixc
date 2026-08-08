@@ -206,7 +206,7 @@ test)
         if [ -n "$2" ] && [ "$name" != "$2" ]; then
             continue
         fi
-        if [ "$name" = "main.c" ]; then
+        if [ "$name" = main.c ]; then
             continue
         fi
         if echo "$src" | grep -q "stc/"; then
@@ -265,11 +265,11 @@ test_all)
     trace_on
     build_tags
     if [ "$CC" = "chibicc" ]; then
-        compile_with_other chibicc $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "main.c"
+        compile_with_other chibicc $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} main.c
     elif [ "$CC" = "cproc" ]; then
-        compile_with_other cproc   $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "main.c"
+        compile_with_other cproc   $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} main.c
     else
-        $CC $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "main.c"
+        $CC $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} main.c
     fi
     trace_off
     ;;
