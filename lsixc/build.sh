@@ -79,7 +79,6 @@ printf "\n${script} ${RED}${1} ${2}$RES\n"
 PREFIX="${PREFIX:-/usr/local}"
 DESTDIR="${DESTDIR:-/}"
 
-main="main.c"
 exe="bin/$program"
 mkdir -p "$(dirname "$exe")"
 
@@ -308,7 +307,7 @@ case "$target" in
         if [ -n "$2" ] && [ "$name" != "$2" ]; then
             continue
         fi
-        if [ "$name" = "$main" ]; then
+        if [ "$name" = "main.c" ]; then
             continue
         fi
         if echo "$src" | grep -q "stc/"; then
@@ -368,11 +367,11 @@ case "$target" in
     find . -iname "*.[ch]" | xargs ctags --kinds-C=+l+d 2> /dev/null || true
     vtags.sed tags | sort | uniq > .tags.vim       2> /dev/null || true
     if [ "$CC" = "chibicc" ]; then
-        with_other chibicc $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "$main"
+        with_other chibicc $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "main.c"
     elif [ "$CC" = "cproc" ]; then
-        with_other cproc   $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "$main"
+        with_other cproc   $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "main.c"
     else
-        $CC $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "$main"
+        $CC $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "main.c"
     fi
     trace_off
     ;;

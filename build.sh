@@ -55,7 +55,6 @@ printf "\n${script} ${RED}${1:-} ${2:-}$RES\n"
 PREFIX="${PREFIX:-/usr/local}"
 DESTDIR="${DESTDIR:-/}"
 
-main="main.c"
 exe="bin/$program"
 mkdir -p "$(dirname "$exe")"
 
@@ -207,7 +206,7 @@ test)
         if [ -n "$2" ] && [ "$name" != "$2" ]; then
             continue
         fi
-        if [ "$name" = "$main" ]; then
+        if [ "$name" = "main.c" ]; then
             continue
         fi
         if echo "$src" | grep -q "stc/"; then
@@ -266,11 +265,11 @@ test_all)
     trace_on
     build_tags
     if [ "$CC" = "chibicc" ]; then
-        compile_with_other chibicc $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "$main"
+        compile_with_other chibicc $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "main.c"
     elif [ "$CC" = "cproc" ]; then
-        compile_with_other cproc   $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "$main"
+        compile_with_other cproc   $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "main.c"
     else
-        $CC $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "$main"
+        $CC $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "main.c"
     fi
     trace_off
     ;;
