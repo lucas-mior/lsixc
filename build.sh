@@ -7,7 +7,6 @@ dir=$(dirname "$(readlink -f "$0")")
 . "$dir/cbase/common.sh"
 
 cbase="cbase"
-CPPFLAGS="$CPPFLAGS -I$dir/$cbase"
 cd "$dir" || exit
 program=$(get_program "$0")
 script=$(basename "$0")
@@ -44,25 +43,14 @@ if [ "$target" = "cross" ] && [ -n "${2:-}" ]; then
     target_line="$target $2"
 fi
 
-target_supported () {
-    wanted=$1
-    printf '%s\n' "$targets" | awk -v wanted="$wanted" '
-        {
-            line = $0
-            sub(/^# /, "", line)
-        }
-        line == wanted { found = 1 }
-        END { exit !found }
-    '
-}
-
-if ! target_supported "$target_line" && ! target_supported "$target"; then
+if ! target_supported "$targets" "$target_line" \
+        && ! target_supported "$targets" "$target"; then
     echo "usage: $script <targets>"
     printf '%s\n' "$targets"
     exit 1
 fi
 
-printf "\n${script} ${RED}${1} ${2}$RES\n"
+printf "\n${script} ${RED}${1:-} ${2:-}$RES\n"
 
 PREFIX="${PREFIX:-/usr/local}"
 DESTDIR="${DESTDIR:-/}"
@@ -71,7 +59,9 @@ main="main.c"
 exe="bin/$program"
 mkdir -p "$(dirname "$exe")"
 
+CPPFLAGS="$CPPFLAGS -I$dir/$cbase"
 CPPFLAGS="$CPPFLAGS -D_DEFAULT_SOURCE"
+
 CFLAGS="$CFLAGS -std=c11"
 CFLAGS="$CFLAGS -Wfatal-errors"
 CFLAGS="$CFLAGS -Wextra -Wall"
@@ -86,6 +76,7 @@ CFLAGS="$CFLAGS -Wno-undefined-internal"
 CFLAGS="$CFLAGS -Wno-unknown-pragmas"
 CFLAGS="$CFLAGS -Wno-unknown-warning-option"
 CFLAGS="$CFLAGS -Wno-unused-macros"
+
 LDFLAGS="$LDFLAGS -lm -lmagic"
 
 OS=$(uname -a)
@@ -106,12 +97,8 @@ if ! command -v "$CC" > /dev/null 2>&1; then
     CC=cc
 fi
 
-noop () {
-    return
-}
-
 if ! command xsel > /dev/null 2>&1; then
-    xsel=noop
+    xsel=cat
 else
     xsel=xsel
 fi
@@ -121,42 +108,6 @@ if echo "$OS" | grep -q "Linux"; then
         GNUSOURCE="-D_GNU_SOURCE"
     fi
 fi
-
-option_remove() {
-    echo "$1" | sed -E "s| *$2 +| |g"
-}
-
-with_other () {
-    compiler="$1"
-    compiler_macro=$(echo "$compiler" | tr '[:lower:]' '[:upper:]')
-    compiler_macro="__${compiler_macro}__"
-    shift
-    args="$*"
-    trace_on
-    while ! problem=$($compiler \
-                      "-D${compiler_macro}" -D__attribute=__attribute__ \
-                      $args 2>&1); do
-        trace_off
-        problem=$(echo "$problem" | head -n 1 | tr -d "'")
-
-        sleep 0.4
-        if echo "$problem" | grep -Eq "unknown (argument|option)"; then
-            arg=$(echo "$problem" | awk '{print $NF}')
-            printf "\nRemoving argument $arg...\n"
-            args=$(option_remove "$args" "$arg")
-        elif echo "$problem" | grep -q "unknown file extension:"; then
-            arg=$(echo "$problem" | awk '{print $NF}')
-            printf "\nRemoving argument $arg...\n"
-            args=$(option_remove "$args" "$arg")
-        else
-            printf "\n\nError compiling with $compiler:\n\n%s" "${problem}\n\n"
-            return 1
-        fi
-        printf "\n"
-        trace_on
-    done
-    return 0
-}
 
 case "$target" in
 debug)
@@ -196,7 +147,7 @@ release)
     CFLAGS="$CFLAGS $GNUSOURCE -DRELEASING=1 -O2 -flto -march=native -ftree-vectorize"
     ;;
 fast_feedback)
-    CFLAGS="$CFLAGS $GNUSOURCE -Werror"
+    CFLAGS="$CFLAGS $GNUSOURCE"
     ;;
 
 *)
@@ -242,28 +193,6 @@ if [ "$CC" = "clang" ]; then
     CFLAGS="$CFLAGS -Wno-assign-enum"
     CFLAGS="$CFLAGS -Wno-cast-function-type-strict"
 fi
-
-install_opt () {
-    mode="$1"
-    file="$2"
-    dest="$3"
-
-    if [ -f "$file" ]; then
-        install "$mode" "$file" "$dest"
-    elif [ -d "$file" ]; then
-        install "$mode" "$dest"
-        cp -rp "$file/." "$dest/"
-    fi
-}
-
-uninstall_opt () {
-    file="$1"
-    dest="$2"
-
-    if [ -e "$file" ]; then
-        rm -rf "$dest"
-    fi
-}
 
 case "$target" in
 fast_feedback)
@@ -330,7 +259,7 @@ test)
         if [ "$CC" = "chibicc" ] || [ "$CC"  = "cproc" ]; then
             cmdline_no_cc=$(option_remove "$cmdline" "$CC")
             trace_on
-            if with_other "$CC" "$cmdline_no_cc"; then
+            if compile_with_other "$CC" "$cmdline_no_cc"; then
                 /tmp/${name}_test
             else
                 exit 1
@@ -356,12 +285,11 @@ test_all)
     ;;
 *)
     trace_on
-    find . -iname "*.[ch]" | xargs ctags --kinds-C=+l+d 2> /dev/null || true
-    vtags.sed tags | sort | uniq > .tags.vim       2> /dev/null || true
+    build_tags
     if [ "$CC" = "chibicc" ]; then
-        with_other chibicc $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "$main"
+        compile_with_other chibicc $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "$main"
     elif [ "$CC" = "cproc" ]; then
-        with_other cproc   $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "$main"
+        compile_with_other cproc   $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "$main"
     else
         $CC $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} "$main"
     fi
