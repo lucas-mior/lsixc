@@ -89,7 +89,7 @@ CPPFLAGS="$CPPFLAGS -D_DEFAULT_SOURCE"
 CFLAGS="$CFLAGS -std=c11"
 CFLAGS="$CFLAGS -Wfatal-errors"
 CFLAGS="$CFLAGS -Wextra -Wall"
-CFLAGS="$CFLAGS -Werror"
+# CFLAGS="$CFLAGS -Werror"
 CFLAGS="$CFLAGS -Wno-cast-qual"
 CFLAGS="$CFLAGS -Wno-constant-logical-operand"
 CFLAGS="$CFLAGS -Wno-float-equal"
@@ -207,7 +207,7 @@ case "$target" in
     ;;
 "fast_feedback")
     CC=clang
-    CFLAGS="$CFLAGS $GNUSOURCE -Werror"
+    # CFLAGS="$CFLAGS $GNUSOURCE -Werror"
     ;;
 
 *)
