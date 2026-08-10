@@ -5,8 +5,6 @@
 #define CBASE_IMPLEMENT
 #include "cbase.h"
 
-#include "memory.c"
-
 static struct termios original_term_attrs;
 #define MAX_TERM_RESPONSE_LEN 256
 #define MAX_DEFAULT_IMAGES 16
