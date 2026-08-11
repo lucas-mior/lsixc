@@ -11,7 +11,7 @@ static struct termios original_term_attrs;
 #define MAX_DEFAULT_IMAGES 16
 static char *index0 = "[0]";
 
-static void noreturn
+static noreturn void
 cleanup(int signal_number) {
     (void)signal_number;
     tcsetattr(STDIN_FILENO, TCSANOW, &original_term_attrs);
