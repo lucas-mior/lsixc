@@ -61,7 +61,6 @@ mkdir -p "$(dirname "$exe")"
 CC=$(get_compiler "$target")
 
 CPPFLAGS="$CPPFLAGS -I$dir/$cbase"
-CPPFLAGS="$CPPFLAGS -D_DEFAULT_SOURCE"
 
 CFLAGS="$CFLAGS -std=c11"
 CFLAGS="$CFLAGS -Wfatal-errors"
@@ -90,53 +89,43 @@ fi
 
 LDFLAGS="$LDFLAGS -lm -lmagic"
 
-OS=$(uname -a)
-
-if echo "$OS" | grep -q "Linux"; then
-    if echo "$OS" | grep -q "GNU"; then
-        GNUSOURCE="-D_GNU_SOURCE"
-    fi
-fi
-
 case "$target" in
 debug)
     CFLAGS="$CFLAGS -g3 -fsanitize=undefined"
-    CPPFLAGS="$CPPFLAGS $GNUSOURCE -DDEBUGGING=1"
+    CPPFLAGS="$CPPFLAGS -DDEBUGGING=1"
     exe="bin/${program}_debug"
     ;;
 benchmark)
     CFLAGS="$CFLAGS -O2 -flto -march=native -ftree-vectorize"
-    CPPFLAGS="$CPPFLAGS $GNUSOURCE -DBRN2_BENCHMARK=1"
+    CPPFLAGS="$CPPFLAGS -DBRN2_BENCHMARK=1"
     exe="bin/${program}_benchmark"
     ;;
 perf)
     CFLAGS="$CFLAGS -g3 -Og -flto"
-    CPPFLAGS="$CPPFLAGS $GNUSOURCE -DBRN2_BENCHMARK=1"
+    CPPFLAGS="$CPPFLAGS -DBRN2_BENCHMARK=1"
     exe="bin/${program}_perf"
     ;;
 valgrind)
     CFLAGS="$CFLAGS -g3 -O0 -ftree-vectorize"
-    CPPFLAGS="$CPPFLAGS $GNUSOURCE -DDEBUGGING=1"
+    CPPFLAGS="$CPPFLAGS -DDEBUGGING=1"
     ;;
 callgrind)
     CFLAGS="$CFLAGS -g3 -O2 -ftree-vectorize"
-    CPPFLAGS="$CPPFLAGS $GNUSOURCE"
     ;;
 test)
-    CFLAGS="$CFLAGS -g3 $GNUSOURCE -DDEBUGGING=1 -fsanitize=undefined"
+    CFLAGS="$CFLAGS -g3 -DDEBUGGING=1 -fsanitize=undefined"
     ;;
 check)
     CC=gcc
-    CFLAGS="$CFLAGS $GNUSOURCE -DDEBUGGING=1 -fanalyzer"
+    CFLAGS="$CFLAGS -DDEBUGGING=1 -fanalyzer"
     ;;
 build)
-    CFLAGS="$CFLAGS $GNUSOURCE -O2 -flto -march=native -ftree-vectorize"
+    CFLAGS="$CFLAGS -O2 -flto -march=native -ftree-vectorize"
     ;;
 release)
-    CFLAGS="$CFLAGS $GNUSOURCE -DRELEASING=1 -O2 -flto -march=native -ftree-vectorize"
+    CFLAGS="$CFLAGS -DRELEASING=1 -O2 -flto -march=native -ftree-vectorize"
     ;;
 fast_feedback)
-    CFLAGS="$CFLAGS $GNUSOURCE"
     ;;
 
 *)
@@ -148,7 +137,6 @@ if [ "$target" = "cross" ]; then
     cross="$2"
     CC="zig cc"
     CFLAGS="$CFLAGS -target $cross"
-    CFLAGS=$(option_remove "$CFLAGS" "-D_GNU_SOURCE")
 
     case $cross in
     x86_64-macos|aarch64-macos)

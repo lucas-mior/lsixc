@@ -1,16 +1,17 @@
+#define CBASE_IMPLEMENT
+#include "cbase.h"
+
 #include <magic.h>
 #include <termios.h>
 
 #define MEMORY_CHECK_USE_AFTER_FREE 0
-#define CBASE_IMPLEMENT
-#include "cbase.h"
 
 static struct termios original_term_attrs;
 #define MAX_TERM_RESPONSE_LEN 256
 #define MAX_DEFAULT_IMAGES 16
 static char *index0 = "[0]";
 
-static void __attribute((noreturn))
+static void noreturn
 cleanup(int signal_number) {
     (void)signal_number;
     tcsetattr(STDIN_FILENO, TCSANOW, &original_term_attrs);
