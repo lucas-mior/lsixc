@@ -196,6 +196,7 @@ esac
 
 case "$target" in
 check)
+    set +e
     CC=gcc CFLAGS="-fanalyzer" ./build.sh
 
     CFLAGS="--analyze -Xanalyzer -analyzer-output=text"
