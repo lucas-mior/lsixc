@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
         fatal(EXIT_FAILURE);
     }
 
-    if (!BEGINS_WITH(TERM, "yaft")) {
+    if (!BEGINS_WITH(TERM, strlen32(TERM), "yaft")) {
         num_colors = 256;
         strcpy(background, "black");
         strcpy(foreground, "white");
