@@ -129,8 +129,8 @@ int main(int argc, char **argv) {
     signal(SIGHUP, cleanup);
     signal(SIGABRT, cleanup);
 
-    strcpy(background, "white");
-    strcpy(foreground, "black");
+    memcpy64(background, STRLIT("white") + 1);
+    memcpy64(foreground, STRLIT("black") + 1);
     
     GETENV(LSIX_FORCE_SIXEL_SUPPORT);
 
@@ -176,8 +176,8 @@ int main(int argc, char **argv) {
 
     if (!BEGINS_WITH(TERM, strlen32(TERM), "yaft")) {
         num_colors = 256;
-        strcpy(background, "black");
-        strcpy(foreground, "white");
+        memcpy64(background, STRLIT("black") + 1);
+        memcpy64(foreground, STRLIT("white") + 1);
     }
 
     if (num_colors < 256) {
@@ -250,7 +250,7 @@ int main(int argc, char **argv) {
             if (BEGINS_WITH((char *)mime_type, mime_type_len, "image/")) {
                 list = realloc2(list, list_len, list_len + 1, SIZEOF(*list));
                 list[list_len].path = malloc2(filename_len + strlen32(index0) + 1);
-                strcpy(list[list_len].path, filename);
+                memcpy64(list[list_len].path, filename, filename_len + 1);
                 list[list_len].len = filename_len;
                 list_len += 1;
             }
@@ -283,7 +283,7 @@ int main(int argc, char **argv) {
 
             list = realloc2(list, list_len, list_len + 1, SIZEOF(*list));
             list[list_len].path = malloc2(path_len + strlen32(index0) + 1);
-            strcpy(list[list_len].path, path);
+            memcpy64(list[list_len].path, path, path_len + 1);
             list[list_len].len = path_len;
             list_len += 1;
         }
