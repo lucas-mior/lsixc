@@ -8,7 +8,7 @@ dir=$(dirname "$(readlink -f "$0")")
 
 cbase="cbase"
 cd "$dir" || exit
-program=$(get_program "$0")
+program=$(common_get_program "$0")
 script=$(basename "$0")
 
 if [ -f ./targets ]; then
@@ -37,10 +37,10 @@ EOF_TARGETS
 )
 fi
 
-build_parse_args "$@"
-build_validate_mode "$script" "$targets"
+common_build_parse_args "$@"
+common_build_validate_mode "$script" "$targets"
 
-build_print_invocation "$script"
+common_build_print_invocation "$script"
 
 PREFIX="${PREFIX:-/usr/local}"
 DESTDIR="${DESTDIR:-/}"
@@ -48,7 +48,7 @@ DESTDIR="${DESTDIR:-/}"
 exe="bin/$program"
 mkdir -p "$(dirname "$exe")"
 
-CC=$(get_compiler "$mode")
+CC=$(common_get_compiler "$mode")
 
 CPPFLAGS="$CPPFLAGS -I$dir/$cbase"
 
@@ -161,24 +161,24 @@ install)
     if [ ! -f "$program" ]; then
         $0 build
     fi
-    install_opt -Dm755 bin/${program}   ${DESTDIR}${PREFIX}/bin/${program}
-    install_opt -Dm644 ${program}.1 ${DESTDIR}${PREFIX}/man/man1/${program}.1
-    install_opt -dm755 etc/ "$DESTDIR/etc/$program"
-    install_opt -Dm755 \
+    common_install_opt -Dm755 bin/${program}   ${DESTDIR}${PREFIX}/bin/${program}
+    common_install_opt -Dm644 ${program}.1 ${DESTDIR}${PREFIX}/man/man1/${program}.1
+    common_install_opt -dm755 etc/ "$DESTDIR/etc/$program"
+    common_install_opt -Dm755 \
         "$program.desktop" \
         "$DESTDIR/usr/share/applications/$program.desktop"
     trace_off
     exit
     ;;
 test)
-    test "$target"
+    common_test "$target"
     exit
     ;;
 test_all)
     ;;
 *)
     trace_on
-    build_tags
+    common_build_tags
     $CC $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} main.c
     trace_off
     ;;
