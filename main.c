@@ -84,7 +84,9 @@ compare_filenames(void *a, void *b) {
 int main(int argc, char **argv) {
     struct termios raw_term_attrs;
     char term_reply[MAX_TERM_RESPONSE_LEN];
+    int32 term_reply_len;
     char *TERM;
+    int32 TERM_len;
     bool has_sixel = false;
     char *LSIX_FORCE_SIXEL_SUPPORT;
     int32 num_colors = 16;
@@ -140,12 +142,12 @@ int main(int argc, char **argv) {
     raw_term_attrs.c_lflag &= ~((uint)ECHO | ICANON);
     tcsetattr(STDIN_FILENO, TCSANOW, &raw_term_attrs);
 
-    read_term_response("\033[c", 'c', term_reply);
+    term_reply_len = read_term_response("\033[c", 'c', term_reply);
     
     {
-        char *find_sixel_1 = strstr(term_reply, ";4;");
-        char *find_sixel_2 = strstr(term_reply, "?4;");
-        char *find_sixel_3 = strstr(term_reply, ";4c");
+        char *find_sixel_1 = memmem64(term_reply, term_reply_len, STRLIT(";4;"));
+        char *find_sixel_2 = memmem64(term_reply, term_reply_len, STRLIT("?4;"));
+        char *find_sixel_3 = memmem64(term_reply, term_reply_len, STRLIT(";4c"));
         
         if (find_sixel_1 != NULL) {
             has_sixel = true;
@@ -173,8 +175,9 @@ int main(int argc, char **argv) {
         error("TERM environment variable is not set.\n");
         fatal(EXIT_FAILURE);
     }
+    TERM_len = strlen32(TERM);
 
-    if (!BEGINS_WITH(TERM, strlen32(TERM), "yaft")) {
+    if (!BEGINS_WITH(TERM, TERM_len, "yaft")) {
         num_colors = 256;
         memcpy64(background, STRLIT("black") + 1);
         memcpy64(foreground, STRLIT("white") + 1);
@@ -209,7 +212,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (strstr(TERM, "xterm")) {
+    if (memmem64(TERM, TERM_len, STRLIT("xterm"))) {
         if (screen_width >= 1000) {
             screen_width = 1000;
         }
