@@ -25,7 +25,6 @@ check
 release
 benchmark
 perf
-valgrind
 callgrind
 test_all
 cross x86_64-linux
@@ -94,10 +93,6 @@ perf)
     CFLAGS="$CFLAGS -g3 -Og -flto"
     CPPFLAGS="$CPPFLAGS -DBRN2_BENCHMARK=1"
     exe="bin/${program}_perf"
-    ;;
-valgrind)
-    CFLAGS="$CFLAGS -g3 -Og -ftree-vectorize"
-    CPPFLAGS="$CPPFLAGS -DDEBUGGING=1"
     ;;
 callgrind)
     CFLAGS="$CFLAGS -g3 -O2 -ftree-vectorize"
