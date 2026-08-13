@@ -172,8 +172,8 @@ test)
 test_all)
     ;;
 *)
-    trace_on
     common_build_tags
+    trace_on
     $CC $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} main.c
     trace_off
     ;;
