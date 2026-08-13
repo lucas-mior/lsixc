@@ -80,7 +80,7 @@ LDFLAGS="$LDFLAGS -lm -lmagic"
 
 case "$mode" in
 debug)
-    CFLAGS="$CFLAGS -g3 -fsanitize=undefined"
+    CFLAGS="$CFLAGS -g3"
     CPPFLAGS="$CPPFLAGS -DDEBUGGING=1"
     exe="bin/${program}_debug"
     ;;
@@ -98,7 +98,7 @@ callgrind)
     CFLAGS="$CFLAGS -g3 -O2 -ftree-vectorize"
     ;;
 test)
-    CFLAGS="$CFLAGS -g3 -DDEBUGGING=1 -fsanitize=undefined"
+    CFLAGS="$CFLAGS -g3 -DDEBUGGING=1"
     ;;
 check)
     CC=gcc
