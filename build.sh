@@ -57,17 +57,17 @@ case "$mode" in
 debug)
     CFLAGS="$CFLAGS -g3"
     CPPFLAGS="$CPPFLAGS -DDEBUGGING=1"
-    exe="bin/${program}_debug"
+    exe="bin/$program"
     ;;
 benchmark)
     CFLAGS="$CFLAGS -O2 -flto -march=native -ftree-vectorize"
     CPPFLAGS="$CPPFLAGS -DBRN2_BENCHMARK=1"
-    exe="bin/${program}_benchmark"
+    exe="bin/$program"
     ;;
 perf)
     CFLAGS="$CFLAGS -g3 -Og -flto"
     CPPFLAGS="$CPPFLAGS -DBRN2_BENCHMARK=1"
-    exe="bin/${program}_perf"
+    exe="bin/$program"
     ;;
 callgrind)
     CFLAGS="$CFLAGS -g3 -O2 -ftree-vectorize"
