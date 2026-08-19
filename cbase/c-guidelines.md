@@ -117,7 +117,7 @@ typeof(var)  // good
     + `realloc2(size) + memset64(pointer, 0, size)` instead of `calloc`.
   * The wrappers above never fail: if out of memory, they exit the program. No
     need to check if they succeded or not.
-  * `free2` already checks if the passed pointer is NULL. Don't check if the
+  * `free2` already checks if the passed pointer is NULL. Never check if the
     pointer is NULL before calling `free2`.
 - Choose what is best in each situation:
   * Use the `arena.c` bump allocator for groups of allocations with the same
@@ -533,6 +533,7 @@ ASSERT_NULL(pointer);
   - `ASSERT_NON_POSITIVE(integer expression)`
   - `ASSERT_NON_NEGATIVE(integer expression)`
   - `ASSERT_EQUAL(number or string or pointer 1, number or string or pointer 2)`
+  - `ASSERT_EQUAL(string, string_len, other_string)`
   - `ASSERT_LESS(number expr 1, number expr 2)`
   - `ASSERT_MORE(number expr 1, number expr 2)`
   - `ASSERT_LESS_EQUAL(number expr 1, number expr 2)`
