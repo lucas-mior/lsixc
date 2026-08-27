@@ -15,7 +15,7 @@ script=$(basename "$0")
 common_build_parse_args "$@"
 
 case "$mode" in
-benchmark|build|callgrind|check|cross|debug|fast_feedback|install|perf|release|test|test_all|uninstall)
+benchmark|build|callgrind|check|cross|debug|debug-fast|fast_feedback|install|perf|release|test|test_all|uninstall)
     ;;
 *)
     common_build_unknown_mode
@@ -67,6 +67,10 @@ debug)
     CPPFLAGS="$CPPFLAGS -DDEBUGGING=1"
     exe="bin/$program"
     ;;
+debug-fast)
+    CFLAGS="$CFLAGS -g2 -O2 -flto -march=native -ftree-vectorize"
+    CPPFLAGS="$CPPFLAGS -DDEBUGGING=1"
+    ;;
 benchmark)
     CFLAGS="$CFLAGS -O2 -flto -march=native -ftree-vectorize"
     CPPFLAGS="$CPPFLAGS -DBRN2_BENCHMARK=1"
@@ -100,7 +104,7 @@ cross)
     common_build_cross_all
     CFLAGS="$CFLAGS -O2"
     ;;
-benchmark|build|callgrind|check|cross|debug|fast_feedback|install|perf|release|test|test_all|uninstall)
+benchmark|build|callgrind|check|cross|debug|debug-fast|fast_feedback|install|perf|release|test|test_all|uninstall)
     ;;
 *)
     common_build_unknown_mode
@@ -160,7 +164,7 @@ test)
     ;;
 test_all)
     ;;
-benchmark|build|callgrind|cross|debug|perf|release)
+benchmark|build|callgrind|cross|debug|debug-fast|perf|release)
     common_build_tags
     trace_on
     $CC $CPPFLAGS $CFLAGS $LDFLAGS -o ${exe} main.c
