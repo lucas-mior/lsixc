@@ -207,7 +207,8 @@ int main(int argc, char **argv) {
             }
         } else {
             read_term_response("\033[14t", 't', term_reply);
-            if (sscanf(term_reply, "\033[4;%d;%dt", &parsed_colors, &parsed_width) == 2) {
+            if (sscanf(term_reply, "\033[4;%d;%dt",
+                                   &parsed_colors, &parsed_width) == 2) {
                 if (parsed_width > 0) {
                     screen_width = parsed_width;
                 }
@@ -257,7 +258,8 @@ int main(int argc, char **argv) {
 
             if (BEGINS_WITH((char *)mime_type, mime_type_len, "image/")) {
                 list = realloc2(list, list_len, list_len + 1, SIZEOF(*list));
-                list[list_len].path = malloc2(filename_len + strlen32(index0) + 1);
+                list[list_len].path =
+                    malloc2(filename_len + strlen32(index0) + 1);
                 memcpy64(list[list_len].path, filename, filename_len + 1);
                 list[list_len].len = filename_len;
                 list_len += 1;
