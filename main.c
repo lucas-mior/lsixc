@@ -164,7 +164,8 @@ int main(int argc, char **argv) {
 
     if (has_sixel == 0) {
         if (LSIX_FORCE_SIXEL_SUPPORT == NULL) {
-            fprintf(stderr, "Error: Your terminal does not report having sixel graphics support.\n");
+            error2("Error:"
+                   " Your terminal does not report having sixel support.\n");
             cleanup(0);
         }
     }
