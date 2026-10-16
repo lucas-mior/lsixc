@@ -32,7 +32,7 @@ read_term_response(char *sequence, char end_character, char *output_buffer) {
     int32 index = 0;
     int32 sequence_len = strlen32(sequence);
     write64(STDERR_FILENO, sequence, sequence_len);
-    
+
     while (1) {
         int32 selected;
         char current_char;
@@ -40,10 +40,10 @@ read_term_response(char *sequence, char end_character, char *output_buffer) {
 
         timeout.tv_sec = (int32)timeout_seconds;
         timeout.tv_usec = (int32)((timeout_seconds - (int32)timeout_seconds)*1000000);
-        
+
         FD_ZERO(&read_fds);
         FD_SET(STDIN_FILENO, &read_fds);
-        
+
         selected = select(STDIN_FILENO + 1, &read_fds, NULL, NULL, &timeout);
         if (selected <= 0) {
             error("Terminal didnt answer for the sequence\n");
@@ -53,22 +53,22 @@ read_term_response(char *sequence, char end_character, char *output_buffer) {
             error("\n");
             break;
         }
-        
+
         read_bytes = read(STDIN_FILENO, &current_char, 1);
         if (read_bytes <= 0) {
             break;
         }
-        
+
         if (index < MAX_TERM_RESPONSE_LEN - 1) {
             output_buffer[index] = current_char;
             index += 1;
         }
-        
+
         if (current_char == end_character) {
             break;
         }
     }
-    
+
     output_buffer[index] = '\0';
     return index;
 }
@@ -77,7 +77,7 @@ static int32
 compare_filenames(void *a, void *b) {
     FileName *file_a = (FileName *)a;
     FileName *file_b = (FileName *)b;
-    
+
     return strcmp(file_a->path, file_b->path);
 }
 
@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
     int32 font_size = tile_width / 10;
 
     int32 parsed_colors = 0;
-    
+
     char *font_family = "Dejavu-Sans";
 
     int32 tile_x_space;
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
     int32 montage_argc = 0;
     char tile_arg[64];
     char geometry_arg[128];
-    
+
     if ((error_fd = mkstemp(error_file)) < 0) {
         error("Error in mkstemp: %s.\n", strerror(errno));
         fatal(EXIT_FAILURE);
@@ -133,22 +133,22 @@ int main(int argc, char **argv) {
 
     memcpy64(background, STRLIT("white") + 1);
     memcpy64(foreground, STRLIT("black") + 1);
-    
+
     GETENV(LSIX_FORCE_SIXEL_SUPPORT);
 
     tcgetattr(STDIN_FILENO, &original_term_attrs);
-    
+
     raw_term_attrs = original_term_attrs;
     raw_term_attrs.c_lflag &= ~((uint)ECHO | ICANON);
     tcsetattr(STDIN_FILENO, TCSANOW, &raw_term_attrs);
 
     term_reply_len = read_term_response("\033[c", 'c', term_reply);
-    
+
     {
         char *find_sixel_1 = memmem64(term_reply, term_reply_len, STRLIT(";4;"));
         char *find_sixel_2 = memmem64(term_reply, term_reply_len, STRLIT("?4;"));
         char *find_sixel_3 = memmem64(term_reply, term_reply_len, STRLIT(";4c"));
-        
+
         if (find_sixel_1 != NULL) {
             has_sixel = true;
         } else if (find_sixel_2 != NULL) {
@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
     }
 
     read_term_response("\033[?1;1;0S", 'S', term_reply);
-    
+
     if (sscanf(term_reply, "\033[?1;0;%dS", &parsed_colors) == 1) {
         num_colors = parsed_colors;
     }
@@ -191,7 +191,7 @@ int main(int argc, char **argv) {
     }
 
     read_term_response("\033]11;?\033\\", '\\', term_reply);
-    
+
     {
         int32 parsed_width = 0;
 
@@ -227,24 +227,24 @@ int main(int argc, char **argv) {
             error("Error opening current directory: %s.\n", strerror(errno));
             fatal(EXIT_FAILURE);
         }
-            
+
         if ((magic_cookie = magic_open(MAGIC_MIME_TYPE)) == NULL) {
             error("Error initializing magic library\n");
             fatal(EXIT_FAILURE);
         }
-        
+
         if (magic_load(magic_cookie, NULL) != 0) {
             error("Error loading magic database: %s\n",
                   (char *)magic_error(magic_cookie));
             fatal(EXIT_FAILURE);
         }
-        
+
         while ((directory_entry = readdir(directory))) {
             char *filename = directory_entry->d_name;
             int32 filename_len = strlen32(filename);
             const char *mime_type;
             int32 mime_type_len;
-            
+
             if ((mime_type = magic_file(magic_cookie, filename)) == NULL) {
                 continue;
             }
@@ -262,10 +262,10 @@ int main(int argc, char **argv) {
                 break;
             }
         }
-        
+
         magic_close(magic_cookie);
         closedir(directory);
-        
+
         if (list_len > 1) {
             qsort64(list, list_len, SIZEOF(*list), compare_filenames);
         }
@@ -279,7 +279,7 @@ int main(int argc, char **argv) {
                 error("Error in stat(%s): %s.\n", path, strerror(errno));
                 fatal(EXIT_FAILURE);
             }
-            
+
             if (S_ISDIR(path_status.st_mode)) {
                 continue;
             }
@@ -304,34 +304,34 @@ int main(int argc, char **argv) {
     montage_argv = malloc2((list_len + 100)*SIZEOF(*montage_argv));
     montage_argv[montage_argc++] = "magick";
     montage_argv[montage_argc++] = "montage";
-    
+
     SNPRINTF(tile_arg, "%dx1", num_tiles);
     montage_argv[montage_argc++] = "-tile";
     montage_argv[montage_argc++] = tile_arg;
-    
+
     SNPRINTF(geometry_arg,
              "%dx%d>+%d+%d",
              tile_width, tile_height, tile_x_space, tile_y_space);
     montage_argv[montage_argc++] = "-geometry";
     montage_argv[montage_argc++] = geometry_arg;
-    
+
     montage_argv[montage_argc++] = "-background";
     montage_argv[montage_argc++] = background;
-    
+
     montage_argv[montage_argc++] = "-fill";
     montage_argv[montage_argc++] = foreground;
-    
+
     montage_argv[montage_argc++] = "-auto-orient";
-    
+
     if (num_colors > 16) {
         montage_argv[montage_argc++] = "-shadow";
     }
-    
+
     if (strlen32(font_family) > 0) {
         montage_argv[montage_argc++] = "-font";
         montage_argv[montage_argc++] = font_family;
     }
-    
+
     if (font_size > 0) {
         SNPRINTF(font_size_string, "%d", font_size);
         montage_argv[montage_argc++] = "-pointsize";
@@ -363,23 +363,23 @@ int main(int argc, char **argv) {
         while ((j < list_len) && (remaining_files > goal)) {
             char *path = list[j].path;
             int32 path_len = list[j].len;
-            
+
             if (ENDS_WITH(path, path_len, ".gif")) {
                 memcpy64(path + path_len, index0, strlen32(index0) + 1);
             }
-            
+
             if (ENDS_WITH(path, path_len, ".webp")) {
                 memcpy64(path + path_len, index0, strlen32(index0) + 1);
             }
-            
+
             montage_argv[montage_argc++] = "-label";
             montage_argv[montage_argc++] = path;
             montage_argv[montage_argc++] = path;
-            
+
             j += 1;
             remaining_files = list_len - j;
         }
-        
+
         montage_argv[montage_argc++] = "gif:/dev/stdout";
         montage_argv[montage_argc++] = NULL;
 
@@ -388,9 +388,9 @@ int main(int argc, char **argv) {
             STRING_FROM_ARRAY(cmd, " ", montage_argv, montage_argc);
             PRINTLN(cmd);
         }
-        
+
         xpipe(pipes);
-        
+
         clock_gettime(CLOCK_MONOTONIC_RAW, &t0_montage);
         switch (montage_pid = fork()) {
         case -1:
@@ -400,9 +400,9 @@ int main(int argc, char **argv) {
             XCLOSE(&pipes[0]);
             xdup2(pipes[1], STDOUT_FILENO);
             XCLOSE(&pipes[1]);
-            
+
             xdup2(error_fd, STDERR_FILENO);
-            
+
             execvp("magick", montage_argv);
             error("Error executing magick: %s\n", strerror(errno));
             fatal(EXIT_FAILURE);
@@ -410,7 +410,7 @@ int main(int argc, char **argv) {
         default:
             break;
         }
-        
+
         clock_gettime(CLOCK_MONOTONIC_RAW, &t0_sixel);
         switch (sixel_pid = fork()) {
         case -1:
@@ -419,22 +419,22 @@ int main(int argc, char **argv) {
         case 0: {
             char num_colors_str[32];
             char *sixel_argv[6];
-            
+
             XCLOSE(&pipes[1]);
             xdup2(pipes[0], STDIN_FILENO);
             XCLOSE(&pipes[0]);
 
             xdup2(error_fd, STDERR_FILENO);
-            
+
             SNPRINTF(num_colors_str, "%d", num_colors);
-            
+
             sixel_argv[0] = "magick";
             sixel_argv[1] = "-";
             sixel_argv[2] = "-colors";
             sixel_argv[3] = num_colors_str;
             sixel_argv[4] = "sixel:/dev/stdout";
             sixel_argv[5] = NULL;
-            
+
             execvp("magick", sixel_argv);
             error("Error executing magick: %s\n", strerror(errno));
             fatal(EXIT_FAILURE);
@@ -442,10 +442,10 @@ int main(int argc, char **argv) {
         default:
             break;
         }
-        
+
         XCLOSE(&pipes[0]);
         XCLOSE(&pipes[1]);
-        
+
         waitpid(montage_pid, &montage_status, 0);
         clock_gettime(CLOCK_MONOTONIC_RAW, &t1_montage);
 
@@ -454,7 +454,7 @@ int main(int argc, char **argv) {
 
         /* PRINT_TIMINGS(10, t0_montage, t1_montage, "magick montage"); */
         /* PRINT_TIMINGS(10, t0_sixel, t1_sixel, "magick sixel"); */
-        
+
         if (WIFEXITED(montage_status) == 0) {
             break;
         }
@@ -471,7 +471,7 @@ int main(int argc, char **argv) {
     }
 
     free2(montage_argv, (list_len + 100)*SIZEOF(*montage_argv));
-    
+
     read_term_response("\033[c", 'c', term_reply);
     catfile(STDERR_FILENO, error_file);
 
