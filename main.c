@@ -39,7 +39,8 @@ read_term_response(char *sequence, char end_character, char *output_buffer) {
         int64 read_bytes;
 
         timeout.tv_sec = (int32)timeout_seconds;
-        timeout.tv_usec = (int32)((timeout_seconds - (int32)timeout_seconds)*1000000);
+        timeout.tv_usec = (int32)((timeout_seconds
+                                   - (int32)timeout_seconds)*1000000);
 
         FD_ZERO(&read_fds);
         FD_SET(STDIN_FILENO, &read_fds);
@@ -145,9 +146,12 @@ int main(int argc, char **argv) {
     term_reply_len = read_term_response("\033[c", 'c', term_reply);
 
     {
-        char *find_sixel_1 = memmem64(term_reply, term_reply_len, STRLIT(";4;"));
-        char *find_sixel_2 = memmem64(term_reply, term_reply_len, STRLIT("?4;"));
-        char *find_sixel_3 = memmem64(term_reply, term_reply_len, STRLIT(";4c"));
+        char *find_sixel_1 = MEM_LITERAL_SHORT(term_reply, term_reply_len,
+                                               ";4;");
+        char *find_sixel_2 = MEM_LITERAL_SHORT(term_reply, term_reply_len,
+                                               "?4;");
+        char *find_sixel_3 = MEM_LITERAL_SHORT(term_reply, term_reply_len,
+                                               ";4c");
 
         if (find_sixel_1 != NULL) {
             has_sixel = true;
