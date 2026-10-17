@@ -130,6 +130,13 @@ class ForbiddenPatternsTests(unittest.TestCase):
         self.assertEqual(output.count("line exceeds 80 columns"), 1)
         self.assertIn("sample.c:3:line exceeds 80 columns", output)
 
+    def test_multiplication_spacing_is_not_checked(self):
+        output = self.run_perl(
+            "src/sample.c",
+            "int32 product = first * second;\n",
+        )
+        self.assertEqual(output, "")
+
     def test_control_flow_requires_braces_for_each_body(self):
         output = self.run_perl(
             "src/sample.c",
