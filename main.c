@@ -15,7 +15,7 @@ static noreturn void
 cleanup(int signal_number) {
     (void)signal_number;
     tcsetattr(STDIN_FILENO, TCSANOW, &original_term_attrs);
-    printf("\033\\");
+    fmt_printf("\033\\");
     exit(EXIT_SUCCESS);
 }
 
@@ -49,7 +49,7 @@ read_term_response(char *sequence, char end_character, char *output_buffer) {
         if (selected <= 0) {
             error("Terminal didnt answer for the sequence\n");
             for (int32 i = 0; i < sequence_len; i += 1) {
-                fprintf(stderr, "%c ", sequence[i]);
+                fmt_fprintf(stderr, "%c ", sequence[i]);
             }
             error("\n");
             break;
@@ -474,7 +474,7 @@ int main(int argc, char **argv) {
         if (WEXITSTATUS(sixel_status) != 0) {
             break;
         }
-        printf("\n");
+        fmt_printf("\n");
     }
 
     free2(montage_argv, (list_len + 100)*SIZEOF(*montage_argv));
