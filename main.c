@@ -153,11 +153,11 @@ int main(int argc, char **argv) {
         char *find_sixel_3 = MEM_LITERAL_SHORT(term_reply, term_reply_len,
                                                ";4c");
 
-        if (find_sixel_1 != NULL) {
+        if (find_sixel_1) {
             has_sixel = true;
-        } else if (find_sixel_2 != NULL) {
+        } else if (find_sixel_2) {
             has_sixel = true;
-        } else if (find_sixel_3 != NULL) {
+        } else if (find_sixel_3) {
             has_sixel = true;
         }
     }
