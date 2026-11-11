@@ -403,7 +403,7 @@ int main(int argc, char **argv) {
         case -1:
             error("Error forking: %s\n", strerror(errno));
             fatal(EXIT_FAILURE);
-        case 0: {
+        case 0:
             XCLOSE(&pipes[0]);
             xdup2(pipes[1], STDOUT_FILENO);
             XCLOSE(&pipes[1]);
@@ -413,7 +413,6 @@ int main(int argc, char **argv) {
             execvp("magick", montage_argv);
             error("Error executing magick: %s\n", strerror(errno));
             fatal(EXIT_FAILURE);
-        }
         default:
             break;
         }
