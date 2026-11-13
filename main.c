@@ -132,8 +132,8 @@ int main(int argc, char **argv) {
     signal(SIGHUP, cleanup);
     signal(SIGABRT, cleanup);
 
-    memcpy64(background, STRLIT("white") + 1);
-    memcpy64(foreground, STRLIT("black") + 1);
+    memcpy64(background, SL("white") + 1);
+    memcpy64(foreground, SL("black") + 1);
 
     GETENV(LSIX_FORCE_SIXEL_SUPPORT);
 
@@ -184,8 +184,8 @@ int main(int argc, char **argv) {
 
     if (!BEGINS_WITH(TERM, TERM_len, "yaft")) {
         num_colors = 256;
-        memcpy64(background, STRLIT("black") + 1);
-        memcpy64(foreground, STRLIT("white") + 1);
+        memcpy64(background, SL("black") + 1);
+        memcpy64(foreground, SL("white") + 1);
     }
 
     if (num_colors < 256) {
@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (memmem64(TERM, TERM_len, STRLIT("xterm"))) {
+    if (memmem64(TERM, TERM_len, SL("xterm"))) {
         if (screen_width >= 1000) {
             screen_width = 1000;
         }
